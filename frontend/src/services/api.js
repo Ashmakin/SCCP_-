@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 创建一个Axios客户端实例，配置后端API的基础URL
 const apiClient = axios.create({
-    baseURL: 'http://127.0.0.1:8080/api', // 确保这与你的后端地址匹配
+    baseURL: 'https://supplier-parts-system-pre.onrender.com', // 确保这与你的后端地址匹配
 });
 
 // 设置请求拦截器
