@@ -26,7 +26,7 @@ import {
     ThemeIcon, Divider, SimpleGrid,
 } from '@mantine/core';
 import { IconAlertCircle, IconCircleCheck, IconFile } from '@tabler/icons-react';
-
+import { API_BASE_URL } from '../api';
 /**
  * 供应商提交报价的表单
  */
@@ -242,7 +242,7 @@ function RfqDetailPage() {
                             >
                                 {attachments.map(att => (
                                     <List.Item key={att.id}>
-                                        {/* 【关键修复】使用基地址构建附件的完整URL */}
+                                        {/* 使用导入的基地址构建附件的完整URL */}
                                         <a
                                             href={`${API_BASE_URL}${att.stored_path.replace('./', '/')}`}
                                             target="_blank"
