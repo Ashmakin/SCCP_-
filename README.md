@@ -4,7 +4,7 @@
 </p>
 <p align="center"><img width="1101" height="71" alt="image" src="https://github.com/user-attachments/assets/9885b69f-cab3-4770-8d31-d5b6db712f1d" /></p>
 
-<p align="center"> <img src="https://img.shields.io/badge/Rust-1.80-orange?style=for-the-badge&logo=rust" alt="Rust Version"> <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react" alt="React Version"> <img src="https://img.shields.io/badge/MySQL-8.0-blue?style=for-the-badge&logo=mysql" alt="MySQL Version"> <img src="https://img.shields.io/badge/Docker-20.10-blue?style=for-the-badge&logo=docker" alt="Docker Version"> <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"> </p>
+<p align="center"> <img src="https://img.shields.io/badge/Rust-1.80-orange?style=for-the-badge&logo=rust" alt="Rust Version"> <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react" alt="React Version"> <img src="https://img.shields.io/badge/MySQL-8.0-blue?style=for-the-badge&logo=mysql" alt="MySQL Version"> <img src="https://img.shields.io/badge/Docker-20.10-blue?style=for-the-badge&logo=docker" alt="Docker Version"> <img src="https://img.shields.io/badge/License-GPL 3.0-red?style=for-the-badge" alt="License"> </p>
 
 **SCCP** 是一个功能完备、技术现代的全栈B2B SaaS平台，旨在通过数字化和智能化的手段，彻底变革传统制造业中的供应商与零件管理流程。平台为需要采购零件的**采购方 (Buyer)** 和能够生产零件的**供应方 (Supplier)** 提供了一个透明、高效、可靠的在线协作环境。
 
