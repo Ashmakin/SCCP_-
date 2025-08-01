@@ -37,43 +37,42 @@
 
 本系统采用主流的**前后端分离**架构，并通过容器化技术进行部署。
 
-<img width="282" height="443" alt="image" src="https://github.com/user-attachments/assets/1e6f9642-87ec-4f78-a296-75facd14f547" />
-
-
-```
-graph TD
-    subgraph "用户端 (Client)"
+```mermaid
+---
+config:
+  layout: elk
+---
+flowchart TD
+ subgraph subGraph0["用户端 (Client)"]
         U["**用户浏览器**<br>桌面 / 移动设备"]
-    end
-
-    subgraph "前端平台 (Vercel)"
-        F["**React 单页面应用 (SPA)**<br>Vite构建 / Mantine UI<br>静态文件托管 & 全球CDN"]
-    end
-
-    subgraph "后端平台 (Render)"
-        subgraph "Docker 容器"
-            B["**Rust 后端服务**<br>Actix Web 框架"]
-            B_API["RESTful API 端点<br>(/api/*)"]
-            B_WS["WebSocket 服务器<br>(/ws)"]
-            B --- B_API & B_WS
-        end
-    end
-
-    subgraph "数据库 (Render)"
+  end
+ subgraph subGraph1["前端平台 (Vercel)"]
+        F["**React 单页面应用 (SPA)**<br>Vite构建 / Mantine UI<br>静态文件托管 &amp; 全球CDN"]
+  end
+ subgraph subGraph2["Docker 容器"]
+        B["**Rust 后端服务**<br>Actix Web 框架"]
+        B_API["RESTful API 端点<br>(/api/*)<br>处理业务逻辑"]
+        B_WS["WebSocket 服务器<br>(/ws)<br>处理实时通信"]
+  end
+ subgraph subGraph3["后端平台 (Render)"]
+        subGraph2
+  end
+ subgraph subGraph4["数据库 (Render)"]
         DB["**托管式 MySQL 数据库**<br>sccp_db"]
-    end
+  end
+ subgraph subGraph5["第三方服务 (External Services)"]
+        Stripe["**Stripe API**<br>在线支付处理"]
+        SMTP["**SMTP 服务**<br>(例如 Mailtrap)<br>邮件通知"]
+  end
+    B --- B_API & B_WS
+    U -- HTTPS<br>访问网站 --> F
+    F -- HTTPS / API 调用<br>(axios) --> B_API
+    F -. WebSocket<br>实时连接 .-> B_WS
+    B == SQL 查询<br>(sqlx) ==> DB
+    B_API -- 创建支付会话 --> Stripe
+    Stripe -- Webhook<br>支付确认 (HTTPS) --> B_API
+    B -- 发送邮件<br>(lettre) --> SMTP
 
-    subgraph "第三方服务"
-        Stripe["**Stripe API**"]
-        SMTP["**SMTP 服务**"]
-    end
-
-    U -- "HTTPS" --> F
-    F -- "HTTPS / API 调用" --> B_API
-    F -. "WebSocket" .-> B_WS
-    B == "SQL 查询 (sqlx)" ==> DB
-    B_API -- "支付/Webhook" --> Stripe
-    B -- "邮件" --> SMTP
 ```
 
 ## 🛠️ 技术栈
@@ -105,8 +104,8 @@ graph TD
 1. **克隆仓库**
 
    ```
-   git clone https://github.com/your-username/sccp-project.git
-   cd sccp-project/backend # 进入后端目录
+   git clone https://github.com/Ashmakin/SCCP_-.git
+   cd SCCP_- # 进入后端目录
    ```
 
 2. **创建数据库** 在MySQL中创建一个名为 `sccp_db` 和 `sccp_db_test` 的数据库。
