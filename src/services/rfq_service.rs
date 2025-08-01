@@ -16,12 +16,16 @@ use crate::models::chat::ChatMessage;
 use crate::services::chat_server::ChatServer;
 use crate::services::matching_service;
 
+
 // ===== Attachment Validation Constants =====
 // 允许的上传附件后缀。根据业务需要可在此处扩展类型。
-const ALLOWED_EXTENSIONS: &[&str] = &["pdf", "doc", "docx", "png", "jpg", "jpeg"];
-
-// 上传文件的最大体积（以字节为单位）。当前设置为 10MB。
-const MAX_UPLOAD_SIZE_BYTES: usize = 10 * 1024 * 1024;
+// --- 【关键修改】在常量中添加 .glb 和 .gltf ---
+const ALLOWED_EXTENSIONS: &[&str] = &[
+    "pdf", "dwg", "step", "stp", "dxf", "png", "jpg", "jpeg",
+    "glb", "gltf", // <-- 新增
+];
+// 单个文件最大体积 (可以适当调大以适应3D模型)
+const MAX_UPLOAD_SIZE_BYTES: usize = 100 * 1024 * 1024; // 100 MB
 
 // 创建不带附件的 RFQ
 pub async fn create_rfq(

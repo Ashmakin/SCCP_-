@@ -35,3 +35,5 @@ tokio = "1.46.1"
 headers = "0.4.1"
 async-stripe = { version = "0.41.0",features = ["runtime-tokio-hyper"]  }
 num-traits = "0.2.19"
+#HTTPS
+rustls-pemfile = "2.1"
