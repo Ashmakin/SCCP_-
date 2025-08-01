@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// 创建一个Axios客户端实例
 const apiClient = axios.create({
     // Vite 会在构建生产版本时，自动将 import.meta.env.VITE_API_BASE_URL 替换为你在.env.production中设定的值
     baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
