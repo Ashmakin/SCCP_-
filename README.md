@@ -172,4 +172,4 @@ cargo test
 
 ## 📜 License
 
-本项目采用 [MIT License](https://www.google.com/search?q=LICENSE)。
+本项目采用 [GPL3.0 License](https://www.google.com/search?q=LICENSE)。
