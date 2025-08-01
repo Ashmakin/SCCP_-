@@ -4,8 +4,8 @@ import React from 'react';
 import '@google/model-viewer';
 import { Paper, Center, Text } from '@mantine/core';
 
-// 【关键修复】从环境变量中获取后端的基地址
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080';
+// 【关键修复 #2】从 api/index.js 导入基地址
+import { API_BASE_URL } from '../api';
 
 function ModelViewer({ modelUrl }) {
     const is3DModel = modelUrl && (modelUrl.endsWith('.glb') || modelUrl.endsWith('.gltf'));
