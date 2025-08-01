@@ -37,7 +37,8 @@
 
 本系统采用主流的**前后端分离**架构，并通过容器化技术进行部署。
 
-![系统架构图]
+<img width="282" height="443" alt="image" src="https://github.com/user-attachments/assets/1e6f9642-87ec-4f78-a296-75facd14f547" />
+
 
 ```
 graph TD
