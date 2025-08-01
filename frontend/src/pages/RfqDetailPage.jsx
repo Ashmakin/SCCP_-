@@ -195,9 +195,7 @@ function RfqDetailPage() {
                 {/* 左侧信息栏 */}
                 <Grid.Col span={{ base: 12, md: 7 }}>
                     {modelAttachment && (
-                        <ModelViewer
-                            modelUrl={`http://127.0.0.1:8080${modelAttachment.stored_path.replace('./', '/')}`}
-                        />
+                        <ModelViewer modelUrl={modelAttachment.stored_path} />
                     )}
                     <Paper withBorder p="xl" radius="md" mt={modelAttachment ? 'xl' : 0}>
 
@@ -244,7 +242,12 @@ function RfqDetailPage() {
                             >
                                 {attachments.map(att => (
                                     <List.Item key={att.id}>
-                                        <a href={`http://127.0.0.1:8080${att.stored_path.replace('./', '/')}`} target="_blank" rel="noopener noreferrer">
+                                        {/* 【关键修复】使用基地址构建附件的完整URL */}
+                                        <a
+                                            href={`${API_BASE_URL}${att.stored_path.replace('./', '/')}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
                                             {att.original_filename}
                                         </a>
                                     </List.Item>
