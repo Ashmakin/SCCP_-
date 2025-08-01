@@ -1,8 +1,9 @@
-import {React, useState, useEffect, useCallback } from 'react';
+import {React, useState, useEffect, useCallback, useMemo} from 'react';
 import {useParams, Link, useNavigate} from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
 import ChatBox from '../components/ChatBox'; // 确保ChatBox组件已导入
+import ModelViewer from '../components/ModelViewer'; // <-- 导入我们新的3D查看器
 
 // 导入所有需要的Mantine组件
 import {
@@ -169,6 +170,15 @@ function RfqDetailPage() {
             }
         }
     };
+// 【关键新增】使用 useMemo 来从附件列表中找出3D模型
+    const modelAttachment = useMemo(() => {
+        if (!Array.isArray(attachments)) return null;
+        // 查找第一个以 .glb 或 .gltf 结尾的附件
+        return attachments.find(att =>
+            att.original_filename.toLowerCase().endsWith('.glb') ||
+            att.original_filename.toLowerCase().endsWith('.gltf')
+        );
+    }, [attachments]);
 
     if (isLoading) return <Center style={{ height: '80vh' }}><Loader /></Center>;
     if (error) return <Alert icon={<IconAlertCircle size="1rem" />} title="Error" color="red">{error}</Alert>;
@@ -184,7 +194,13 @@ function RfqDetailPage() {
             <Grid>
                 {/* 左侧信息栏 */}
                 <Grid.Col span={{ base: 12, md: 7 }}>
-                    <Paper withBorder p="xl" radius="md">
+                    {modelAttachment && (
+                        <ModelViewer
+                            modelUrl={`http://127.0.0.1:8080${modelAttachment.stored_path.replace('./', '/')}`}
+                        />
+                    )}
+                    <Paper withBorder p="xl" radius="md" mt={modelAttachment ? 'xl' : 0}>
+
                         <Group position="apart" align="flex-start">
                             <div>
                                 <Title order={2}>{rfq.title}</Title>

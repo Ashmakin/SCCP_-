@@ -91,11 +91,13 @@ function CreateRfqForm({ onRfqCreated }) {
                         onChange={(value) => setQuantity(value || 1)}
                     />
                     <FileInput
-                        label="Attachment (PDF, CAD, etc.)"
+                        label="Attachment (PDF, CAD, 3D Model)"
                         placeholder="Upload file"
                         value={attachment}
                         onChange={setAttachment}
                         clearable
+                        // 【关键新增】通过 accept 属性限制可选的文件类型
+                        accept=".pdf,.dwg,.step,.stp,.dxf,.png,.jpg,.jpeg,.glb,.gltf"
                     />
                     <Button type="submit" mt="md" loading={isSubmitting}>
                         Submit RFQ
