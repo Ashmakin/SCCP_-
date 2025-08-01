@@ -5,6 +5,9 @@ const apiClient = axios.create({
     // Vite 会在构建生产版本时，自动将 import.meta.env.VITE_API_BASE_URL 替换为你在.env.production中设定的值
     baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
 });
+// 【关键修复 #1】在这里定义并导出 API_BASE_URL，作为唯一的真实来源
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080';
+
 
 // 设置请求拦截器以附加JWT
 apiClient.interceptors.request.use(
