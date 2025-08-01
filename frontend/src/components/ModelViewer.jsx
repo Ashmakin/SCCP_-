@@ -1,11 +1,13 @@
 // src/components/ModelViewer.jsx
 
 import React from 'react';
-import '@google/model-viewer'; // 导入类型定义
+import '@google/model-viewer';
 import { Paper, Center, Text } from '@mantine/core';
 
+// 【关键修复】从环境变量中获取后端的基地址
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080';
+
 function ModelViewer({ modelUrl }) {
-    // 检查 modelUrl 是否存在且是 .glb 或 .gltf 格式
     const is3DModel = modelUrl && (modelUrl.endsWith('.glb') || modelUrl.endsWith('.gltf'));
 
     if (!is3DModel) {
@@ -18,13 +20,13 @@ function ModelViewer({ modelUrl }) {
         );
     }
 
+    // 【关键修复】使用基地址来构建完整的生产环境URL
+    const fullModelUrl = `${API_BASE_URL}${modelUrl.replace('./', '/')}`;
+
     return (
         <Paper withBorder shadow="md" p="md" radius="md" style={{ height: '400px', position: 'relative' }}>
-            {/* 这就是 model-viewer 组件。它看起来像一个HTML标签，
-        但它拥有强大的3D和AR功能。
-      */}
             <model-viewer
-                src={modelUrl}
+                src={fullModelUrl}
                 alt="A 3D model of the part"
                 ar
                 ar-modes="webxr scene-viewer quick-look"
@@ -32,7 +34,6 @@ function ModelViewer({ modelUrl }) {
                 auto-rotate
                 style={{ width: '100%', height: '100%' }}
             >
-                {/* 这个按钮会在支持AR的设备上自动显示 */}
                 <button slot="ar-button" style={{
                     backgroundColor: 'white',
                     borderRadius: '4px',
