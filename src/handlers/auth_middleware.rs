@@ -9,7 +9,7 @@ use futures::future::{ok, Ready};
 use std::future::Future;
 use std::pin::Pin;
 
-// 中间件工厂
+// 中间件集中营（折磨）
 pub struct Auth;
 
 impl<S, B> Transform<S, ServiceRequest> for Auth
@@ -47,19 +47,19 @@ where
     actix_web::dev::forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        // 从请求头中提取 "Authorization"
+        // 从header提 "Authorization"
         let auth_header = req.headers().get("Authorization");
 
         // 验证token
         match auth_header {
             Some(header_value) => {
-                // 期望的格式是 "Bearer <token>"
+                // 期望的格式是 "Bearer <token>"（BUG，修好了）
                 if let Ok(auth_str) = header_value.to_str() {
                     if auth_str.starts_with("Bearer ") {
                         let token = &auth_str[7..];
                         match auth_utils::validate_jwt(token) {
                             Ok(claims) => {
-                                // 验证成功，将用户信息 (claims) 存入请求的扩展中，方便后续处理器使用
+                                // 验证成功，写用户信息 (claims) 到Request的扩展中，方便后续处理器使用
                                 req.extensions_mut().insert(claims);
                             }
                             Err(_) => {
@@ -69,7 +69,7 @@ where
                             }
                         }
                     } else {
-                        // Header格式不正确
+                        // Header格式不对
                         let err = AppError::AuthError;
                         return Box::pin(async move { Err(err.into()) });
                     }

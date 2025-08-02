@@ -1,4 +1,3 @@
-// src/models/quote.rs
 use serde::{Deserialize, Serialize};
 use sqlx::{types::Decimal, FromRow};
 use chrono::{DateTime, Utc};

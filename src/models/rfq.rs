@@ -1,4 +1,3 @@
-// src/models/rfq.rs
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use chrono::{DateTime, Utc};
@@ -15,8 +14,8 @@ pub struct Rfq {
     // 这个字段通过JOIN查询得到
     #[sqlx(default)]
     pub buyer_company_name: String,
-    #[sqlx(default)] // <-- 新增
-    pub city: Option<String>, // 公司城市可能为空
+    #[sqlx(default)] //
+    pub city: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

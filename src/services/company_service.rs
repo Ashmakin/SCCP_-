@@ -20,7 +20,7 @@ pub async fn update_company_profile(
     dto: UpdateCompanyDto,
     claims: &Claims,
 ) -> Result<u64, AppError> {
-    // 权限检查：确保操作者属于他们正试图修改的公司
+    // 权限检查：确保操作者属于他们正试图修改的公司，之后多加点员工的分类好一点。然后做个子系统
     if claims.company_id != company_id {
         return Err(AppError::BadRequest("You are not authorized to edit this company profile.".to_string()));
     }

@@ -1,5 +1,3 @@
-// src/services/user_service.rs
-
 use crate::{
     errors::AppError,
     models::user::{ChangePasswordDto, Claims, User, UserProfileResponse},
@@ -8,14 +6,13 @@ use crate::{
 use sqlx::MySqlPool;
 
 pub async fn get_my_profile(pool: &MySqlPool, claims: &Claims) -> Result<UserProfileResponse, AppError> {
-    // highlight-start
+
     let profile = sqlx::query_as(
         "SELECT u.id, u.full_name, u.email, u.company_id, u.is_active, c.name as company_name
          FROM users u
          JOIN companies c ON u.company_id = c.id
          WHERE u.id = ?"
     )
-        // highlight-end
         .bind(claims.sub)
         .fetch_optional(pool)
         .await?;
@@ -46,12 +43,12 @@ pub async fn change_password(
         return Err(AppError::BadRequest("Incorrect current password.".to_string()));
     }
 
-    // 3. 验证新密码强度（简单示例：不少于6位）
+    // 3. 验证新密码强度（简单示例：不少于6位，还有别的没加）
     if dto.new_password.len() < 6 {
         return Err(AppError::BadRequest("New password must be at least 6 characters long.".to_string()));
     }
 
-    // 4. 哈希新密码并更新数据库
+    // 4. 哈希掉新密码并更新数据库
     let new_password_hash = auth_utils::hash_password(&dto.new_password)
         .map_err(|_| AppError::InternalServerError("Failed to hash new password".to_string()))?;
 

@@ -17,9 +17,8 @@ use crate::services::chat_server::ChatServer;
 use crate::services::matching_service;
 
 
-// ===== Attachment Validation Constants =====
 // 允许的上传附件后缀。根据业务需要可在此处扩展类型。
-// --- 【关键修改】在常量中添加 .glb 和 .gltf ---
+// 3D功能，在常量中添加 .glb 和 .gltf ---
 const ALLOWED_EXTENSIONS: &[&str] = &[
     "pdf", "dwg", "step", "stp", "dxf", "png", "jpg", "jpeg",
     "glb", "gltf", // <-- 新增
@@ -49,11 +48,11 @@ pub async fn create_rfq(
 
     Ok(result.last_insert_id())
 }
-/////////////////
+
 // 创建带附件的 RFQ
 pub async fn create_rfq_with_attachment(
     pool: &MySqlPool,
-    chat_server: &Addr<ChatServer>, // <-- 新增参数
+    chat_server: &Addr<ChatServer>,
     claims: &Claims,
     mut payload: actix_multipart::Multipart,
 ) -> Result<u64, AppError> {
@@ -185,8 +184,8 @@ pub async fn create_rfq_with_attachment(
     }
 
     tx.commit().await?;
-    // --- 【关键新增】在事务成功后，异步执行匹配和通知 ---
-    // 我们需要一个完整的Rfq对象来传递给匹配服务
+    // 事务成功后，异步执行匹配和通知BUG！！！！
+    // 需要一个完整的Rfq对象来传递给匹配服务
     let new_rfq = get_rfq_by_id(pool, rfq_id as i32).await?;
     let pool_clone = pool.clone();
     let chat_server_clone = chat_server.clone();
@@ -270,15 +269,13 @@ pub async fn get_messages_for_rfq(pool: &MySqlPool, rfq_id: i32) -> Result<Vec<C
     Ok(messages)
 }
 
-// This function is now specifically for attachments. We rename it for clarity.
-// Note: We won't test this multipart function right now, but we'll keep the logic.
 pub async fn upload_attachment_for_rfq(
     pool: &MySqlPool,
     claims: &Claims,
     rfq_id: i32,
     mut payload: actix_multipart::Multipart,
 ) -> Result<(), AppError> {
-    // Security check remains the same
+    // 安全检查
     let rfq_owner: (i32,) = sqlx::query_as("SELECT buyer_company_id FROM rfqs WHERE id = ?")
         .bind(rfq_id)
         .fetch_one(pool)
@@ -291,9 +288,6 @@ pub async fn upload_attachment_for_rfq(
     while let Some(field_result) = payload.next().await {
         let mut field = field_result?;
 
-        // --- FIX for Error #1 (Borrow Checker) ---
-        // Get the filename as an owned String immediately to release the borrow on `field`.
-        // We do this by mapping the inner `&str` to a `String`.
         let filename_opt: Option<String> = field
             .content_disposition()
             .and_then(|cd| cd.get_filename().map(|s| s.to_string()));
@@ -302,9 +296,6 @@ pub async fn upload_attachment_for_rfq(
             let unique_filename = format!("{}-{}", Uuid::new_v4(), &filename);
             let filepath = format!("./uploads/{}", unique_filename);
 
-            // --- FIX for Error #2 (Moved Value) ---
-            // Clone filepath. The clone will be moved into the closure,
-            // while the original remains available for the database query below.
             let filepath_clone = filepath.clone();
 
             let mut f = web::block(move || fs::File::create(filepath_clone)).await??;
@@ -313,13 +304,12 @@ pub async fn upload_attachment_for_rfq(
                 f = web::block(move || f.write_all(&data).map(|_| f)).await??;
             }
 
-            // Save attachment info to DB
             sqlx::query(
                 "INSERT INTO rfq_attachments (rfq_id, original_filename, stored_path) VALUES (?, ?, ?)"
             )
                 .bind(rfq_id)
-                .bind(filename) // Now using the owned String
-                .bind(filepath) // Now using the original `filepath` which was not moved
+                .bind(filename)
+                .bind(filepath)
                 .execute(pool)
                 .await?;
         }

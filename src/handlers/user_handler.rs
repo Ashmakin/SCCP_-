@@ -1,5 +1,3 @@
-// src/handlers/user_handler.rs
-
 use crate::{
     errors::AppError,
     models::user::{ChangePasswordDto, Claims},

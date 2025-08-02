@@ -1,5 +1,3 @@
-// src/models/capability.rs
-
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 

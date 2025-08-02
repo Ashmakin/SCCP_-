@@ -4,7 +4,7 @@ use crate::services::auth_service;
 use actix_web::{web, HttpResponse, Responder};
 use sqlx::MySqlPool;
 
-/// 处理注册请求的API端点
+/// 处理注册请求的API
 pub async fn register(
     pool: web::Data<MySqlPool>,
     dto: web::Json<RegisterDto>,
@@ -13,7 +13,7 @@ pub async fn register(
     Ok(HttpResponse::Created().json("Registration successful"))
 }
 
-/// 处理登录请求的API端点
+/// 处理登录请求的API
 pub async fn login(
     pool: web::Data<MySqlPool>,
     dto: web::Json<LoginDto>,

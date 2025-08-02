@@ -1,4 +1,3 @@
-// src/services/admin_service.rs
 use crate::{errors::AppError, models::company::CompanyProfile};
 use sqlx::MySqlPool;
 use crate::models::user::UserProfileResponse;

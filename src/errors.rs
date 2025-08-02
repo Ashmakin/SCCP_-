@@ -1,5 +1,3 @@
-// src/errors.rs
-
 use actix_web::{error::BlockingError, HttpResponse, ResponseError};
 use thiserror::Error;
 use actix_multipart::MultipartError;
@@ -19,7 +17,6 @@ pub enum AppError {
     #[error("Internal Server Error: {0}")]
     InternalServerError(String),
 
-    // --- 新增的错误变体 ---
     #[error("IO Error: {0}")]
     IoError(#[from] io::Error),
 
@@ -43,7 +40,6 @@ impl ResponseError for AppError {
                 log::error!("Internal Server Error: {}", message);
                 HttpResponse::InternalServerError().json("An unexpected error occurred")
             }
-            // --- 新增的错误响应 ---
             AppError::IoError(e) => {
                 log::error!("IO Error: {:?}", e);
                 HttpResponse::InternalServerError().json("File system error")

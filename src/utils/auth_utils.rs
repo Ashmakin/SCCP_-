@@ -18,11 +18,11 @@ pub fn create_jwt(
     user_id: i32,
     company_id: i32,
     company_type: &str,
-    is_admin: bool, // <-- 新增参数
+    is_admin: bool,
 ) -> Result<String, jsonwebtoken::errors::Error> {
     // 从环境变量获取JWT密钥
     let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-    // 设置过期时间为7天后
+    // 设置过期时间为7天后（有点搞笑）
     let expiration = Utc::now()
         .checked_add_signed(Duration::days(7))
         .expect("Failed to create valid timestamp")
@@ -56,11 +56,10 @@ pub fn validate_jwt(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> 
 }
 
 
-// --- 新增：测试模块 ---
-// `#[cfg(test)]` 宏告诉Rust编译器，只有在运行 `cargo test` 命令时才编译和运行这段代码。
+//测试模块
 #[cfg(test)]
 mod tests {
-    use super::*; // 导入父模块（auth_utils）的所有内容
+    use super::*;
 
     #[test]
     fn test_password_hashing_and_verification() {
@@ -68,7 +67,7 @@ mod tests {
         let password = "mySecurePassword123";
 
         // 2. 哈希密码
-        // .unwrap() 在测试中是可接受的，因为如果这里失败了，我们希望测试立即恐慌(panic)
+        // .unwrap() 在测试中可以用，因为如果这里失败了，我们希望测试立即恐慌(panic)
         let hashed_password = hash_password(password).unwrap();
 
         // 3. 验证

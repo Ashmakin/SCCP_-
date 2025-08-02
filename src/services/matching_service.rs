@@ -1,5 +1,3 @@
-// src/services/matching_service.rs
-
 use crate::{
     errors::AppError,
     models::rfq::Rfq,
@@ -9,9 +7,9 @@ use crate::{
     },
 };
 use actix::Addr;
-use sqlx::{MySqlPool, Row}; // Make sure Row is imported
+use sqlx::{MySqlPool, Row};
 
-// extract_keywords function remains the same
+
 fn extract_keywords(text: &str) -> Vec<String> {
     text.to_lowercase()
         .split(|c: char| !c.is_alphanumeric())
@@ -20,15 +18,13 @@ fn extract_keywords(text: &str) -> Vec<String> {
         .collect()
 }
 
-// Replace the old function with this new version
+
 pub async fn find_and_notify_suppliers(
     pool: &MySqlPool,
     chat_server: &Addr<ChatServer>,
     rfq: &Rfq,
 ) -> Result<(), AppError> {
     log::info!("Starting supplier matching process for RFQ #{}", rfq.id);
-
-    // 1. Extract keywords
     let search_text = format!("{} {}", rfq.title, rfq.description.as_deref().unwrap_or(""));
     let keywords = extract_keywords(&search_text);
 
@@ -37,14 +33,9 @@ pub async fn find_and_notify_suppliers(
         return Ok(());
     }
     log::info!("Extracted keywords for RFQ #{}: {:?}", rfq.id, keywords);
-
-
-    // 2. 【THE FIX】Find matching capabilities using LIKE instead of IN
-    // We build a query like: SELECT id FROM capabilities WHERE name LIKE ? OR name LIKE ? ...
     let like_clauses: Vec<String> = keywords.iter().map(|_| "name LIKE ?".to_string()).collect();
     let where_clause = like_clauses.join(" OR ");
     let sql = format!("SELECT id FROM capabilities WHERE {}", where_clause);
-
     let mut query_builder = sqlx::query(&sql);
     for keyword in &keywords {
         // Add wildcards for partial matching
@@ -64,7 +55,6 @@ pub async fn find_and_notify_suppliers(
     }
     log::info!("Found matching capability IDs for RFQ #{}: {:?}", rfq.id, matched_cap_ids);
 
-    // 3. Find suppliers with these capabilities (this part remains the same)
     let query = format!(
         "SELECT company_id, COUNT(capability_id) as match_count
          FROM company_capabilities
@@ -87,13 +77,12 @@ pub async fn find_and_notify_suppliers(
         .map(|row| (row.get("company_id"),))
         .collect();
 
-    // 4. Send notifications (this part remains the same)
     if matched_suppliers.is_empty() {
         log::info!("No suppliers found with matched capabilities for RFQ #{}", rfq.id);
         return Ok(());
     }
 
-    // 4. 为匹配到的供应商创建并发送通知
+    // 为匹配到的供应商创建并发送通知（严重BUG）！！！！！！现在还没修好
     log::info!("Found {} matched suppliers for RFQ #{}. Sending notifications...", matched_suppliers.len(), rfq.id);
     for (company_id,) in matched_suppliers {
         // 假设一个公司只有一个用户接收通知，实际应用可能更复杂
@@ -108,7 +97,7 @@ pub async fn find_and_notify_suppliers(
                 let message = format!("New high-match opportunity: '{}'", &rfq.title);
                 let link = format!("/rfqs/{}", rfq.id);
 
-                // 使用我们已有的通知服务
+                // 使用已有的通知服务
                 NotificationBuilder::new(user_id, message)
                     .with_link(link)
                     .send(pool, chat_server)

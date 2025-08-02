@@ -1,7 +1,5 @@
-// tests/rfq_test.rs
-
 use crate::{config, api, models::user::{LoginResponse, RegisterDto}};
-use actix_web::{test, web, App, http::header, ResponseError}; // Import ResponseError
+use actix_web::{test, web, App, http::header, ResponseError};
 
 #[actix_web::test]
 async fn test_create_rfq_success_with_auth() {
@@ -29,7 +27,7 @@ async fn test_create_rfq_success_with_auth() {
 
     let resp = test::call_service(&app, req).await;
 
-    // This assertion will now pass because the endpoint expects JSON
+
     assert_eq!(resp.status(), 201, "Status code should be 201 Created");
 
     let saved_rfq: Result<(String,), sqlx::Error> = sqlx::query_as("SELECT title FROM rfqs WHERE buyer_company_id = ?")
@@ -44,7 +42,6 @@ async fn test_create_rfq_success_with_auth() {
 
 #[actix_web::test]
 async fn test_create_rfq_unauthorized_without_token() {
-    // 1. Setup
     let pool = config::configure_test_db().await;
     let app = test::init_service(
         App::new()
@@ -52,28 +49,26 @@ async fn test_create_rfq_unauthorized_without_token() {
             .configure(api::config)
     ).await;
 
-    // 2. Prepare request data
+
     let rfq_dto = serde_json::json!({
         "title": "Unauthorized RFQ",
         "description": "This should fail.",
         "quantity": 50
     });
 
-    // 3. Send request
+
     let req = test::TestRequest::post()
         .uri("/api/rfqs")
         .set_json(&rfq_dto)
         .to_request();
 
-    // 4. Use `try_call_service` which returns a Result
+
     let result = test::try_call_service(&app, req).await;
 
-    // 5. Assert that the result is an error and check the response it generates
     match result {
         Ok(_) => panic!("Request should have failed but it succeeded"),
         Err(e) => {
-            // The 'e' variable is an actix_web::Error which implements ResponseError.
-            // We can call .error_response() directly on it.
+
             let response = e.error_response();
             assert_eq!(response.status(), 401, "Error response status should be 401");
         }
@@ -81,10 +76,9 @@ async fn test_create_rfq_unauthorized_without_token() {
 }
 
 
-// --- Helper Function (add serde_json and sqlx::Row imports if needed) ---
+
 use serde_json::json;
 use sqlx::Row;
-use crate::errors::AppError;
 
 async fn setup_and_login(pool: &sqlx::MySqlPool) -> (String, i32) {
     let register_dto = RegisterDto {

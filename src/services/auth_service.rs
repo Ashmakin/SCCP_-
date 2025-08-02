@@ -19,20 +19,18 @@ pub async fn register_user_and_company(
 
     // 使用数据库事务，确保所有操作要么全部成功，要么全部失败
     let mut tx = pool.begin().await?;
-    // --- 诊断步骤 ---
-    // 我们只执行第一个INSERT，看看错误是否依然发生
-    log::info!("Attempting to insert into companies table...");
+    log::info!("Attempting to insert into companies table...");//调试
     // 1. 创建公司
     let company_result = sqlx::query("INSERT INTO companies (name, company_type,city) VALUES (?, ?,?)")
         .bind(&dto.company_name)
         .bind(&dto.company_type)
-        .bind(&dto.city) // <-- 绑定新的 city 数据
+        .bind(&dto.city)
         .execute(&mut *tx)
         .await?;
     log::info!("Successfully inserted into companies table. (Transaction not committed)");
     let company_id = company_result.last_insert_id() as i32;
 
-    // 2. 哈希密码
+    // 2. 哈希
     let password_hash = auth_utils::hash_password(&dto.password)
         .map_err(|_| AppError::InternalServerError("Failed to hash password".to_string()))?;
 
@@ -78,7 +76,7 @@ pub async fn login_user(pool: &MySqlPool, dto: LoginDto) -> Result<String, AppEr
 
     // 3. 创建JWT
     let user: User = User::from_row(&row)?;
-    // --- 【关键新增】检查用户是否被禁用 ---
+    // 这里新增了一个功能，检查用户是否被禁用
     if !user.is_active {
         return Err(AppError::BadRequest("This account has been disabled.".to_string()));
     }

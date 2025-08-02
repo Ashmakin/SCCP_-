@@ -1,5 +1,4 @@
 use actix::Addr;
-// src/handlers/rfq_handler.rs
 use crate::{
     errors::AppError,
     models::user::Claims,
@@ -9,7 +8,6 @@ use serde::Deserialize;
 use actix_multipart::Multipart;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use sqlx::MySqlPool;
-use crate::models::rfq::CreateRfqDto;
 use crate::services::chat_server::ChatServer;
 
 #[derive(Debug, Deserialize)]
@@ -18,10 +16,9 @@ pub struct RfqFilterParams {
     city: Option<String>,
 }
 
-// Replace the multipart version of post_rfq with this JSON version
 pub async fn post_rfq(
     pool: web::Data<MySqlPool>,
-    chat_server: web::Data<Addr<ChatServer>>, // <-- 确保这个参数存在
+    chat_server: web::Data<Addr<ChatServer>>,
     payload: Multipart,
     req: HttpRequest,
 ) -> Result<impl Responder, AppError> {
@@ -32,7 +29,7 @@ pub async fn post_rfq(
 }
 pub async fn get_rfqs(
     pool: web::Data<MySqlPool>,
-    params: web::Query<RfqFilterParams>, // <-- 将参数绑定到我们的Struct
+    params: web::Query<RfqFilterParams>,
 ) -> Result<impl Responder, AppError> {
     let rfqs = rfq_service::get_all_open_rfqs(
         pool.get_ref(),
@@ -67,8 +64,6 @@ pub async fn get_messages_for_rfq(
     Ok(HttpResponse::Ok().json(messages))
 }
 
-// --- 【ADD THIS FUNCTION】 ---
-// This function handles the request to get chat history for an RFQ
 pub async fn get_messages(
     pool: web::Data<MySqlPool>,
     rfq_id: web::Path<i32>,

@@ -1,7 +1,6 @@
-// src/handlers/mod.rs
 pub mod auth_handler;
 pub mod auth_middleware;
-pub mod rfq_handler;    // 新增
+pub mod rfq_handler;
 pub mod quote_handler;
 pub(crate) mod order_handler;
 
@@ -14,4 +13,4 @@ pub mod admin_handler;
 pub mod capability_handler;
 pub mod notification_handler;
 pub mod ws_handler;
-// 新增
+pub mod annotation_handler;

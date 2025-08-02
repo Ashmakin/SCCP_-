@@ -1,5 +1,3 @@
-// src/handlers/order_handler.rs
-
 use crate::{
     errors::AppError,
     models::{order::UpdateOrderStatusDto, user::Claims},

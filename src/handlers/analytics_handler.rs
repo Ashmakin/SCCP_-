@@ -26,7 +26,7 @@ pub async fn get_spending_breakdown(
     Ok(HttpResponse::Ok().json(breakdown))
 }
 
-/// 处理获取供应方(Supplier)核心统计数据的API请求
+/// Supplier统计数据的API请求在这一起处理
 pub async fn get_supplier_stats(
     pool: web::Data<MySqlPool>,
     req: HttpRequest,
@@ -37,6 +37,6 @@ pub async fn get_supplier_stats(
     // 调用service层函数
     let stats = analytics_service::get_supplier_dashboard_stats(pool.get_ref(), &claims).await?;
 
-    // 返回200 OK和JSON数据
+    // 返回200 OK和JSON数据（这里出现过逆天bug，但是可能是我看错了）
     Ok(HttpResponse::Ok().json(stats))
 }

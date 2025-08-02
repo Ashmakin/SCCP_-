@@ -1,6 +1,6 @@
 // tests/auth_test.rs
 
-// 引入我们应用的主crate，并命名为 sccp_backend
+// 引入主crate，并命名为 sccp_backend，这里基本都是AI写的
 use crate::{config, api, models::user::RegisterDto};
 use actix_web::{test, web, App};
 use serde_json::json;
@@ -9,7 +9,7 @@ use serde_json::json;
 #[actix_web::test]
 async fn test_register_user_success() {
     // 1. 设置测试环境
-    // 连接到我们的测试数据库
+    // 连接到测试数据库
     let pool = config::configure_test_db().await;
     // 初始化一个测试服务器
     let app = test::init_service(

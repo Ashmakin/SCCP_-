@@ -34,7 +34,7 @@ pub struct ChangePasswordDto {
 pub struct RegisterDto {
     pub company_name: String,
     pub company_type: String, // "BUYER" or "SUPPLIER"
-    pub city: String, // <-- 新增此字段
+    pub city: String,
     pub email: String,
     pub password: String,
     pub full_name: String,
@@ -71,18 +71,18 @@ pub struct UserProfileResponse {
     pub company_id: i32,
     #[sqlx(default)]
     pub company_name: String,
-    pub is_active: bool, // <-- 新增
+    pub is_active: bool,
 }
 
 
 // --- JWT Claims ---
-// 这是嵌入在JWT中的数据
+// 这是嵌在JWT中的数据
 
 #[derive(Debug, Serialize, Deserialize,Clone)]
 pub struct Claims {
     pub sub: i32, // User ID
     pub company_id: i32,
     pub company_type: String,
-    pub is_admin: bool, // <-- 新增
-    pub exp: usize, // Expiration timestamp
+    pub is_admin: bool,
+    pub exp: usize, //时间戳限时
 }

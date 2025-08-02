@@ -8,23 +8,23 @@ use crate::{
     services::{chat_server::ChatServer, quote_service},
 };
 
-/// 处理供应方(Supplier)为某个RFQ提交新报价的请求
+/// 供应方(Supplier)为某个RFQ提交新报价的quote
 /// POST /api/rfqs/{rfq_id}/quotes
 pub async fn post_quote(
     pool: web::Data<MySqlPool>,
-    chat_server: web::Data<Addr<ChatServer>>, // <-- 新增：获取WebSocket服务器地址
+    chat_server: web::Data<Addr<ChatServer>>,
     rfq_id: web::Path<i32>,
     dto: web::Json<CreateQuoteDto>,
     req: HttpRequest,
 ) -> Result<impl Responder, AppError> {
-    // 从请求中提取经过Auth中间件验证后的用户信息
+
     let claims = req
         .extensions()
         .get::<Claims>()
         .cloned()
         .ok_or(AppError::AuthError)?;
 
-    // 调用service层函数，并传入 chat_server 地址以触发实时通知
+    // 调用service层函数，并传入 chat_server 地址以触发实时通知，这里是修复刚才没有实时通知的关键，一不小心把他忘了
     let quote_id = quote_service::create_quote(
         pool.get_ref(),
         chat_server.get_ref(),

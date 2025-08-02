@@ -1,5 +1,3 @@
-// src/handlers/capability_handler.rs
-
 use crate::{
     errors::AppError,
     models::{capability::AddCompanyCapabilityDto, user::Claims},

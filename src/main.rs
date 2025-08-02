@@ -1,6 +1,5 @@
-// 声明所有顶层模块，让编译器知道它们的存在
-use actix::Actor; // <-- 新增
-use crate::services::chat_server::ChatServer; // <-- 新增
+use actix::Actor;
+use crate::services::chat_server::ChatServer;
 pub mod api;
 pub mod errors;
 pub mod handlers;
@@ -9,11 +8,8 @@ pub mod services;
 pub mod utils;
 pub mod config;
 mod tests;
-// --- 新增导入 ---
-
 use std::fs::File;
 use std::io::BufReader;
-
 use actix_cors::Cors;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use dotenv::dotenv;
@@ -35,23 +31,17 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     // 初始化日志记录器
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
-
     // 读取数据库连接URL
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set in .env file");
+    //let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set in .env file");
     // 创建数据库连接池
-    // --- 使用新的Config模块来获取配置和数据库连接池 ---
     let config = Config::from_env();
     let pool = config.db_pool().await;
-
     log::info!("Database pool created successfully.");
-
-
     // 获取服务地址和端口
     let server_addr = env::var("SERVER_ADDR").unwrap_or_else(|_| "0.0.0.0:8080".to_string());
-    log::info!("🚀 Server starting at http://{}", server_addr);
-    // --- 在 HttpServer::new 之前，启动ChatServer Actor ---
+    log::info!("Server starting at http://{}", server_addr);
+    // 在 HttpServer::new 之前，启动ChatServer Actor，此处顺序不对会让ChatServer炸掉
     let chat_server = ChatServer::default().start();
-
     // 启动HTTP服务器
     HttpServer::new(move || {
         // 配置CORS（跨域资源共享）
@@ -60,11 +50,10 @@ async fn main() -> std::io::Result<()> {
             .allow_any_method()
             .allow_any_header()
             .max_age(3600);
-
         App::new()
             // 将数据库连接池共享给所有处理器
             .app_data(web::Data::new(pool.clone()))
-            // --- 将ChatServer的地址共享给所有处理器 ---
+            //将ChatServer的地址共享给所有处理器
             .app_data(web::Data::new(chat_server.clone()))
             // 启用日志中间件
             .wrap(Logger::default())

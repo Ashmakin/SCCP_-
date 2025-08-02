@@ -1,15 +1,14 @@
-// src/handlers/admin_handler.rs
 use crate::{errors::AppError, models::user::Claims, services::admin_service};
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use sqlx::MySqlPool;
-use serde::Deserialize; // <-- 导入
-// ...
+use serde::Deserialize;
+
 #[derive(Deserialize)]
 pub struct UserStatusUpdate {
     is_active: bool,
 }
 
-// 权限检查辅助函数
+// 权限检查辅助
 fn check_admin(req: &HttpRequest) -> Result<Claims, AppError> {
     let claims = req.extensions().get::<Claims>().cloned().ok_or(AppError::AuthError)?;
     if !claims.is_admin {

@@ -1,5 +1,3 @@
-// src/services/analytics_service.rs
-
 use crate::{
     errors::AppError,
     models::{analytics::{BuyerStats, SpendingBySupplier, }, user::Claims},
@@ -34,7 +32,7 @@ pub async fn get_buyer_spending_by_supplier(pool: &MySqlPool, claims: &Claims) -
         return Err(AppError::BadRequest("Analytics are only available for buyers.".to_string()));
     }
 
-    // 使用 GROUP BY 和 JOIN 来按供应商分组统计支出
+    // 用 GROUP BY 和 JOIN 来按供应商分组统计支出
     let spending_data = sqlx::query_as(
         "SELECT
             c.name as supplier_name,
@@ -57,7 +55,7 @@ pub async fn get_supplier_dashboard_stats(pool: &MySqlPool, claims: &Claims) -> 
         return Err(AppError::BadRequest("Analytics are only available for suppliers.".to_string()));
     }
 
-    // 【关键修复】重写SQL查询，使其始终返回一行
+    // 这个真的恶心，必须要SQL查询的时候使其始终返回一行，我还以为类型错了
     let stats: SupplierStats = sqlx::query_as(
         "SELECT
             (SELECT COUNT(*) FROM quotes WHERE supplier_company_id = ?) as total_quotes_submitted,

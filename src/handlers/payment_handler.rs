@@ -1,5 +1,3 @@
-// src/handlers/payment_handler.rs
-
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use sqlx::MySqlPool;
 use crate::{
@@ -10,7 +8,6 @@ use crate::{
 use std::env;
 use stripe::{EventObject, EventType, Webhook};
 
-// create_session 函数保持不变
 pub async fn create_session(
     pool: web::Data<MySqlPool>,
     order_id: web::Path<i32>,
@@ -21,7 +18,7 @@ pub async fn create_session(
     Ok(HttpResponse::Ok().json(CheckoutSessionResponse { session_id }))
 }
 
-// 【关键修复】使用 async-stripe 的API处理Webhook
+// 用 async-stripe 的API处理Webhook，一定要谨慎
 pub async fn handle_webhook(
     pool: web::Data<MySqlPool>,
     payload: String,
@@ -35,7 +32,7 @@ pub async fn handle_webhook(
 
     // 检查事件类型
     if event.type_ == EventType::CheckoutSessionCompleted {
-        // 使用 `if let` 模式匹配来安全地提取会话对象
+        // 用 `if let` 模式匹配来安全地提取会话对象
         if let EventObject::CheckoutSession(session) = event.data.object {
             log::info!("Checkout session {} completed!", session.id);
 

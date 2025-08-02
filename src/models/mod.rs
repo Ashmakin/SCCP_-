@@ -1,4 +1,3 @@
-// src/models/mod.rs
 pub mod user;
 pub mod rfq;
 pub mod quote;
@@ -9,4 +8,4 @@ pub(crate) mod analytics;
 pub(crate) mod payment;
 pub(crate) mod capability;
 pub(crate) mod notification;
-// <-- 新增
+pub(crate) mod annotation;

@@ -39,7 +39,7 @@ impl WsSession {
         }
     }
 
-    // 心跳检查函数
+    // hbp检查
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
         ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
@@ -115,7 +115,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
                             }
                         }
                         "CHAT" => {
-                            // 解析 "rfqId|message_text" 格式
+                            // 解析 "rfqId|message_text" 格式，气晕了
                             if let Some((rfq_id_str, msg_text)) = value.split_once('|') {
                                 if let Ok(rfq_id) = rfq_id_str.parse::<i32>() {
                                     if msg_text.trim().is_empty() { return; }
@@ -160,7 +160,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
                                                 msg: message_to_save,
                                             });
 
-                                            // 4. 为房间内其他用户创建通知 (简化实现：只通知RFQ所有者)
+                                            // 4. 为房间内其他用户创建通知 (简化：只通知RFQ所有者)
                                             let rfq_owner_id: Result<(i32,), _> = sqlx::query_as("SELECT u.id FROM rfqs r JOIN users u ON r.buyer_company_id = u.company_id WHERE r.id = ? LIMIT 1")
                                                 .bind(rfq_id).fetch_one(&pool).await;
 

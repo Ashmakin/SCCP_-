@@ -1,4 +1,3 @@
-// src/models/notification.rs
 use serde::Serialize;
 use sqlx::FromRow;
 use chrono::{DateTime, Utc};

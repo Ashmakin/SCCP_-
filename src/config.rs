@@ -36,8 +36,8 @@ pub async fn configure_test_db() -> Pool<MySql> {
         .await
         .expect("Failed to connect to test database");
 
-    // 3. (可选但推荐) 在运行测试前清理数据
-    // 这确保了每次测试都在一个干净的环境中进行，互不干扰
+    // 3. (推荐吧) 在运行测试前清理数据
+    // 确保了每次测试都在一个干净的环境中进行，互不干扰
     sqlx::query("DELETE FROM users").execute(&pool).await.unwrap();
     sqlx::query("DELETE FROM companies").execute(&pool).await.unwrap();
 

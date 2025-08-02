@@ -1,4 +1,4 @@
-// src/models/payment.rs
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]

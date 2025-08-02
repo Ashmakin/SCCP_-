@@ -1,10 +1,7 @@
-// src/models/order.rs
-
 use serde::{Deserialize, Serialize};
 use sqlx::{types::Decimal, FromRow};
 use chrono::{DateTime, Utc};
 
-// 用于自定义Decimal的序列化
 mod decimal_as_string {
     use super::*;
     pub fn serialize<S>(value: &Decimal, serializer: S) -> Result<S::Ok, S::Error>

@@ -1,5 +1,3 @@
-// src/handlers/company_handler.rs
-
 use crate::{
     errors::AppError,
     models::{company::UpdateCompanyDto, user::Claims},

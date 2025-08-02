@@ -44,13 +44,11 @@ pub async fn create_quote(
 
     let quote_id = result.last_insert_id();
 
-    // --- 【关键修改】同时触发两种通知 ---
+    // 修好了！同时触发两种通知
 
     // 1. 查询需要通知的用户ID、邮箱和RFQ标题
     // 我们假设一个公司只有一个用户，实际应用中这里可能更复杂
-    // --- 【THE FIX】Handle notification results with `if let` ---
 
-    // 1. Fetch the necessary info for notifications
     let rfq_owner_info: Result<(i32, String, String), _> = sqlx::query_as(
         "SELECT u.id, u.email, r.title FROM rfqs r JOIN users u ON r.buyer_company_id = u.company_id WHERE r.id = ?"
     )
@@ -59,7 +57,7 @@ pub async fn create_quote(
         .await;
 
     if let Ok((buyer_user_id, buyer_email, rfq_title)) = rfq_owner_info {
-        // 2. Try to send the in-app notification
+
         let in_app_result = NotificationBuilder::new(
             buyer_user_id,
             format!("You received a new quote for '{}'", &rfq_title)
@@ -71,8 +69,6 @@ pub async fn create_quote(
         if let Err(e) = in_app_result {
             log::error!("Failed to send in-app notification: {:?}", e);
         }
-
-        // 3. Try to send the email notification
         let subject = format!("New Quote Received: {}", &rfq_title);
         let body = format!(
             "Hello,\n\nA new quote has been submitted for your RFQ '{}'.\n\nPlease log in to your SCCP account to review it.",
@@ -86,8 +82,6 @@ pub async fn create_quote(
     } else {
         log::error!("Failed to fetch RFQ owner info for notifications for RFQ ID: {}", rfq_id);
     }
-
-    // The main function still succeeds and returns the quote_id
     Ok(quote_id)
 }
 
@@ -154,7 +148,6 @@ pub async fn accept_quote(
     let po_id = po_result.last_insert_id();
     tx.commit().await?;
 
-    // --- 【THE FIX】Handle notification Results with `if let` ---
     let supplier_user: Result<(i32, String), _> =
         sqlx::query_as("SELECT id, email FROM users WHERE company_id = ? LIMIT 1")
             .bind(supplier_company_id)
@@ -162,7 +155,7 @@ pub async fn accept_quote(
             .await;
 
     if let Ok((supplier_user_id, supplier_email)) = supplier_user {
-        // Try to send in-app notification
+
         let in_app_result = NotificationBuilder::new(
             supplier_user_id,
             format!("Congratulations! Your quote for '{}' has been accepted.", &rfq_title),
@@ -175,7 +168,6 @@ pub async fn accept_quote(
             log::error!("Failed to send in-app notification to supplier: {:?}", e);
         }
 
-        // Try to send email notification
         let subject = format!("Your Quote for '{}' has been Accepted!", &rfq_title);
         let body = "Congratulations! Your quote has been accepted and a new Purchase Order has been generated. Please log in to view your orders.".to_string();
 
@@ -187,28 +179,4 @@ pub async fn accept_quote(
 
     Ok(po_id)
 }
-// src/services/order_service.rs
-pub async fn get_orders_for_user(pool: &MySqlPool, claims: &Claims) -> Result<Vec<PurchaseOrder>, AppError> {
-    let sql_query = if claims.company_type == "BUYER" {
-        "SELECT po.*, r.title as rfq_title, b.name as buyer_name, s.name as supplier_name
-         FROM purchase_orders po
-         JOIN rfqs r ON po.rfq_id = r.id
-         JOIN companies b ON po.buyer_company_id = b.id
-         JOIN companies s ON po.supplier_company_id = s.id
-         WHERE po.buyer_company_id = ? ORDER BY po.created_at DESC"
-    } else {
-        "SELECT po.*, r.title as rfq_title, b.name as buyer_name, s.name as supplier_name
-         FROM purchase_orders po
-         JOIN rfqs r ON po.rfq_id = r.id
-         JOIN companies b ON po.buyer_company_id = b.id
-         JOIN companies s ON po.supplier_company_id = s.id
-         WHERE po.supplier_company_id = ? ORDER BY po.created_at DESC"
-    };
 
-    let orders = sqlx::query_as(sql_query)
-        .bind(claims.company_id)
-        .fetch_all(pool)
-        .await?;
-
-    Ok(orders)
-}
