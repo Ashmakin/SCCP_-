@@ -1,10 +1,10 @@
-// src/components/ModelViewer.jsx
+ 
 
 import React from 'react';
 import '@google/model-viewer';
 import { Paper, Center, Text } from '@mantine/core';
 
-// 【关键修复 #2】从 api/index.js 导入基地址
+ 
 import { API_BASE_URL } from '../api';
 
 function ModelViewer({ modelUrl }) {
@@ -20,7 +20,7 @@ function ModelViewer({ modelUrl }) {
         );
     }
 
-    // 【关键修复】使用基地址来构建完整的生产环境URL
+ 
     const fullModelUrl = `${API_BASE_URL}${modelUrl.replace('./', '/')}`;
 
     return (
@@ -32,7 +32,13 @@ function ModelViewer({ modelUrl }) {
                 ar-modes="webxr scene-viewer quick-look"
                 camera-controls
                 auto-rotate
-                style={{ width: '100%', height: '100%' }}
+                // --- 【关键升级】 ---
+
+                // 1. 帮助AR系统更好地理解放置平面，提升稳定性
+                ar-placement="floor"
+
+                // 2. 优化触摸操作：允许页面进行垂直滚动，同时将捏合等手势留给模型查看器
+                style={{ width: '100%', height: '100%', touchAction: 'pan-y' }}
             >
                 <button slot="ar-button" style={{
                     backgroundColor: 'white',
@@ -41,7 +47,8 @@ function ModelViewer({ modelUrl }) {
                     position: 'absolute',
                     bottom: '16px',
                     right: '16px',
-                    padding: '10px 15px'
+                    padding: '10px 15px',
+                    fontWeight: '500',
                 }}>
                     在AR中查看
                 </button>
