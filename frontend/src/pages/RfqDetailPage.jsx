@@ -2,10 +2,10 @@ import {React, useState, useEffect, useCallback, useMemo} from 'react';
 import {useParams, Link, useNavigate} from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
-import ChatBox from '../components/ChatBox'; // 确保ChatBox组件已导入
-import ModelViewer from '../components/ModelViewer'; // <-- 导入我们新的3D查看器
+import ChatBox from '../components/ChatBox'; 
+import ModelViewer from '../components/ModelViewer'; 
 
-// 导入所有需要的Mantine组件
+ 
 import {
     Container,
     Title,
@@ -27,9 +27,7 @@ import {
 } from '@mantine/core';
 import { IconAlertCircle, IconCircleCheck, IconFile } from '@tabler/icons-react';
 import { API_BASE_URL } from '../api';
-/**
- * 供应商提交报价的表单
- */
+ 
 function CreateQuoteForm({ rfqId, onQuoteSubmitted }) {
     const [price, setPrice] = useState('');
     const [lead_time_days, setLeadTime] = useState('');
@@ -88,9 +86,7 @@ function CreateQuoteForm({ rfqId, onQuoteSubmitted }) {
     );
 }
 
-/**
- * 采购方看到的报价列表
- */
+ 
 function QuoteList({ quotes, onAccept, rfqStatus }) {
     if (!quotes.length) return <Text c="dimmed" ta="center" mt="xl">No quotes have been received yet.</Text>;
 
@@ -117,9 +113,7 @@ function QuoteList({ quotes, onAccept, rfqStatus }) {
     );
 }
 
-/**
- * 主详情页组件
- */
+ 
 function RfqDetailPage() {
     const { rfqId } = useParams();
     const { user } = useAuth();
@@ -163,17 +157,17 @@ function RfqDetailPage() {
             try {
                 await api.acceptQuote(quoteId);
                 alert("Quote accepted! A purchase order has been created.");
-                navigate('/orders'); // 接受后直接跳转到订单页
+                navigate('/orders'); 
             } catch (error) {
                 console.error("Failed to accept quote", error);
                 alert("Failed to accept quote.");
             }
         }
     };
-// 【关键新增】使用 useMemo 来从附件列表中找出3D模型
+ 
     const modelAttachment = useMemo(() => {
         if (!Array.isArray(attachments)) return null;
-        // 查找第一个以 .glb 或 .gltf 结尾的附件
+ 
         return attachments.find(att =>
             att.original_filename.toLowerCase().endsWith('.glb') ||
             att.original_filename.toLowerCase().endsWith('.gltf')
@@ -192,10 +186,10 @@ function RfqDetailPage() {
             <Button component={Link} to="/dashboard" variant="subtle" mb="md" pl={0}>&larr; Back to Dashboard</Button>
 
             <Grid>
-                {/* 左侧信息栏 */}
+                { }
                 <Grid.Col span={{ base: 12, md: 7 }}>
                     {modelAttachment && (
-                        <ModelViewer modelUrl={modelAttachment.stored_path} />
+                        <ModelViewer attachment={modelAttachment} />
                     )}
                     <Paper withBorder p="xl" radius="md" mt={modelAttachment ? 'xl' : 0}>
 
@@ -242,7 +236,7 @@ function RfqDetailPage() {
                             >
                                 {attachments.map(att => (
                                     <List.Item key={att.id}>
-                                        {/* 使用导入的基地址构建附件的完整URL */}
+                                        { }
                                         <a
                                             href={`${API_BASE_URL}${att.stored_path.replace('./', '/')}`}
                                             target="_blank"
@@ -259,7 +253,7 @@ function RfqDetailPage() {
                     </Paper>
                 </Grid.Col>
 
-                {/* 右侧操作栏 */}
+                { }
                 <Grid.Col span={{ base: 12, md: 5 }}>
                     <Stack>
                         {isOwner && <QuoteList quotes={quotes} onAccept={handleAcceptQuote} rfqStatus={rfq.status} />}
