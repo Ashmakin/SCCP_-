@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-// 导入所有需要的Mantine组件
+ 
 import {
     Container,
     Title,
@@ -15,10 +15,10 @@ import {
     Divider,
 } from '@mantine/core';
 
-// 导入一些图标来丰富视觉效果
+ 
 import { IconFileText, IconMessages, IconChartPie } from '@tabler/icons-react';
 
-// 一个可复用的“功能特性”卡片组件
+ 
 function FeatureCard({ icon, title, description }) {
     return (
         <Paper withBorder radius="md" p="lg">
@@ -37,11 +37,11 @@ function FeatureCard({ icon, title, description }) {
 
 
 function HomePage() {
-    const { user } = useAuth(); // 获取当前用户登录状态
+    const { user } = useAuth(); 
 
     return (
         <Container size="lg" py="xl">
-            {/* Hero Section - 核心宣传区域 */}
+            { }
             <Paper style={{ textAlign: 'center', padding: '4rem 1rem', backgroundColor: 'transparent' }}>
                 <Title order={1} style={{ fontSize: '3rem' }}>
                     Intelligent Supply Chain,
@@ -60,7 +60,7 @@ function HomePage() {
                     Connect with verified suppliers, manage your RFQs, and streamline your procurement process from start to finish on a single, powerful platform.
                 </Text>
 
-                {/* Call-to-Action Buttons - 根据登录状态显示不同按钮 */}
+                { }
                 <Group justify="center" mt="xl">
                     {user ? (
                         <Button component={Link} to="/dashboard" size="lg">
@@ -81,7 +81,7 @@ function HomePage() {
 
             <Divider my="xl" label="Platform Features" labelPosition="center" />
 
-            {/* Features Section - 功能特性展示区 */}
+            { }
             <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
                 <FeatureCard
                     icon={<IconFileText size={28} />}

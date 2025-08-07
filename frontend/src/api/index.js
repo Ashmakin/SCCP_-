@@ -59,6 +59,7 @@ export const updateCompanyProfile = (id, data) => apiClient.put(`/companies/${id
 
  
 export const getOrders = () => apiClient.get('/orders');
+export const rateOrder = (orderId, ratings) => apiClient.post(`/orders/${orderId}/rate`, ratings); // <-- 新增
 export const updateOrderStatus = (orderId, status) => {
     return apiClient.patch(`/orders/${orderId}/status`, { status });
 

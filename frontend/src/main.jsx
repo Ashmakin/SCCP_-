@@ -5,12 +5,12 @@ import './index.css';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 
-// --- 新增导入 ---
+ 
 import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import {loadStripe} from "@stripe/stripe-js";
 import {Elements} from "@stripe/react-stripe-js";
-import {NotificationProvider} from "./context/NotificationContext.jsx"; // 导入Mantine的核心样式
+import {NotificationProvider} from "./context/NotificationContext.jsx"; 
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -20,7 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <MantineProvider>
                 <AuthProvider>
                     <NotificationProvider>
-                    <Elements stripe={stripePromise}> {/* <-- 用Elements包裹App */}
+                    <Elements stripe={stripePromise}> { }
                         <App />
                     </Elements>
                         </NotificationProvider>

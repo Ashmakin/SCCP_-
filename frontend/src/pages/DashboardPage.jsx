@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
 import { Link } from 'react-router-dom';
 
-// 导入所有需要的Mantine组件
+ 
 import {
     Title,
     Text,
@@ -20,13 +20,11 @@ import {
     FileInput,
 } from '@mantine/core';
 
-// 导入我们已有的分析组件
+ 
 import BuyerAnalytics from '../components/BuyerAnalytics';
 import SupplierAnalytics from '../components/SupplierAnalytics';
 
-/**
- * 创建RFQ的表单子组件
- */
+ 
 function CreateRfqForm({ onRfqCreated }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -49,7 +47,7 @@ function CreateRfqForm({ onRfqCreated }) {
         try {
             await api.createRfq(formData);
             alert('RFQ created successfully!');
-            // 重置表单
+ 
             setTitle('');
             setDescription('');
             setQuantity(1);
@@ -96,7 +94,7 @@ function CreateRfqForm({ onRfqCreated }) {
                         value={attachment}
                         onChange={setAttachment}
                         clearable
-                        // 【关键新增】通过 accept 属性限制可选的文件类型
+ 
                         accept=".pdf,.dwg,.step,.stp,.dxf,.png,.jpg,.jpeg,.glb,.gltf"
                     />
                     <Button type="submit" mt="md" loading={isSubmitting}>
@@ -108,9 +106,7 @@ function CreateRfqForm({ onRfqCreated }) {
     );
 }
 
-/**
- * 搜索和筛选表单子组件
- */
+ 
 function FilterForm({ onSearch }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [city, setCity] = useState('');
@@ -141,9 +137,7 @@ function FilterForm({ onSearch }) {
     );
 }
 
-/**
- * RFQ列表子组件
- */
+ 
 function RfqList({ rfqs }) {
     if (!rfqs || rfqs.length === 0) {
         return <Text mt="md">No open RFQs found with the current filters.</Text>;
@@ -185,9 +179,7 @@ function RfqList({ rfqs }) {
 }
 
 
-/**
- * 主仪表盘页面组件
- */
+ 
 function DashboardPage() {
     const { user } = useAuth();
     const [rfqs, setRfqs] = useState([]);
@@ -224,7 +216,7 @@ function DashboardPage() {
             <Text mb="xl" c="dimmed">Welcome back, here's an overview of your activities.</Text>
 
             <Grid>
-                {/* 主内容区 (左侧) */}
+                { }
                 <Grid.Col span={{ base: 12, lg: 8 }}>
                     <Stack>
                         <Title order={3}>{user.company_type === 'BUYER' ? "My Open RFQs" : "Find Open RFQs"}</Title>
@@ -233,7 +225,7 @@ function DashboardPage() {
                     </Stack>
                 </Grid.Col>
 
-                {/* 侧边栏区 (右侧) */}
+                { }
                 <Grid.Col span={{ base: 12, lg: 4 }}>
                     <Stack>
                         {user.company_type === 'BUYER' && <BuyerAnalytics />}

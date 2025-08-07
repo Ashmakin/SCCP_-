@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import * as api from '../api';
 
-// 导入所有需要的Mantine组件
+ 
 import {
     Title,
     Text,
@@ -19,12 +19,12 @@ import {
 import { IconAlertCircle, IconCircleCheck } from '@tabler/icons-react';
 
 function MyProfilePage() {
-    // State for fetching user profile data
+ 
     const [profile, setProfile] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // State for the password change form
+ 
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,7 +32,7 @@ function MyProfilePage() {
     const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
 
 
-    // Fetch user profile when the component mounts
+ 
     useEffect(() => {
         const fetchProfile = async () => {
             setIsLoading(true);
@@ -49,12 +49,12 @@ function MyProfilePage() {
         fetchProfile();
     }, []);
 
-    // Handle the password change form submission
+ 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
-        setPasswordMessage({ type: '', text: '' }); // Reset message
+        setPasswordMessage({ type: '', text: '' }); 
 
-        // Client-side validation
+ 
         if (newPassword !== confirmPassword) {
             setPasswordMessage({ type: 'error', text: 'New passwords do not match.' });
             return;
@@ -71,7 +71,7 @@ function MyProfilePage() {
                 new_password: newPassword,
             });
             setPasswordMessage({ type: 'success', text: 'Password updated successfully! You may need to log in again with your new password.' });
-            // Clear form fields on success
+ 
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
@@ -145,7 +145,7 @@ function MyProfilePage() {
                         required
                     />
 
-                    {/* Display success or error messages for the password form */}
+                    { }
                     {passwordMessage.text && (
                         <Alert
                             icon={passwordMessage.type === 'success' ? <IconCircleCheck size="1rem" /> : <IconAlertCircle size="1rem" />}

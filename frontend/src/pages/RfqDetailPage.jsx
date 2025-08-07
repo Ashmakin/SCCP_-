@@ -1,11 +1,12 @@
-import {React, useState, useEffect, useCallback, useMemo} from 'react';
-import {useParams, Link, useNavigate} from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import * as api from '../api';
-import ChatBox from '../components/ChatBox'; 
-import ModelViewer from '../components/ModelViewer'; 
+import ChatBox from '../components/ChatBox';
+import ModelViewer from '../components/ModelViewer';
 
- 
+// 导入所有需要的Mantine组件
 import {
     Container,
     Title,
@@ -20,14 +21,19 @@ import {
     Loader,
     Center,
     Card,
+    List,
+    ThemeIcon,
+    Divider,
     NumberInput,
     Textarea,
-    List,
-    ThemeIcon, Divider, SimpleGrid,
+    SimpleGrid,
 } from '@mantine/core';
-import { IconAlertCircle, IconCircleCheck, IconFile } from '@tabler/icons-react';
-import { API_BASE_URL } from '../api';
- 
+import { IconAlertCircle, IconCircleCheck, IconFile, IconPhonePlus } from '@tabler/icons-react';
+import {API_BASE_URL} from "../api";
+
+/**
+ * 供应商提交报价的表单
+ */
 function CreateQuoteForm({ rfqId, onQuoteSubmitted }) {
     const [price, setPrice] = useState('');
     const [lead_time_days, setLeadTime] = useState('');
@@ -86,9 +92,13 @@ function CreateQuoteForm({ rfqId, onQuoteSubmitted }) {
     );
 }
 
- 
+/**
+ * 采购方看到的报价列表
+ */
 function QuoteList({ quotes, onAccept, rfqStatus }) {
-    if (!quotes.length) return <Text c="dimmed" ta="center" mt="xl">No quotes have been received yet.</Text>;
+    if (!quotes || quotes.length === 0) {
+        return <Text c="dimmed" ta="center" mt="xl">No quotes have been received yet.</Text>;
+    }
 
     return (
         <Stack>
@@ -113,11 +123,15 @@ function QuoteList({ quotes, onAccept, rfqStatus }) {
     );
 }
 
- 
+/**
+ * 主详情页组件
+ */
 function RfqDetailPage() {
     const { rfqId } = useParams();
     const { user } = useAuth();
+    const { sendMessage } = useNotifications();
     const navigate = useNavigate();
+
     const [rfq, setRfq] = useState(null);
     const [attachments, setAttachments] = useState([]);
     const [quotes, setQuotes] = useState([]);
@@ -157,22 +171,50 @@ function RfqDetailPage() {
             try {
                 await api.acceptQuote(quoteId);
                 alert("Quote accepted! A purchase order has been created.");
-                navigate('/orders'); 
+                navigate('/orders');
             } catch (error) {
                 console.error("Failed to accept quote", error);
                 alert("Failed to accept quote.");
             }
         }
     };
- 
+
+    const handleRequestAssistance = () => {
+        if (!rfq || !user) return;
+
+        // 假设RFQ的创建者是专家, 我们需要其用户ID
+        const expertUserId = rfq.buyer_user_id; // 假设后端返回了这个字段
+
+        if (!expertUserId) {
+            alert("Could not identify the buyer to call.");
+            return;
+        }
+
+        if (expertUserId === user.sub) {
+            alert("You cannot call yourself.");
+            return;
+        }
+
+        // 通过WebSocket发送呼叫请求
+        sendMessage(`CALL|${expertUserId}|${rfq.id}`);
+
+        // 导航到协作页面
+        navigate(`/collaboration/rfq/${rfq.id}?initiate=true&remoteUser=${expertUserId}`);
+    };
+
     const modelAttachment = useMemo(() => {
         if (!Array.isArray(attachments)) return null;
- 
         return attachments.find(att =>
             att.original_filename.toLowerCase().endsWith('.glb') ||
             att.original_filename.toLowerCase().endsWith('.gltf')
         );
     }, [attachments]);
+
+    const otherAttachments = useMemo(() => {
+        if (!Array.isArray(attachments)) return [];
+        return attachments.filter(att => !modelAttachment || att.id !== modelAttachment.id);
+    }, [attachments, modelAttachment]);
+
 
     if (isLoading) return <Center style={{ height: '80vh' }}><Loader /></Center>;
     if (error) return <Alert icon={<IconAlertCircle size="1rem" />} title="Error" color="red">{error}</Alert>;
@@ -186,83 +228,80 @@ function RfqDetailPage() {
             <Button component={Link} to="/dashboard" variant="subtle" mb="md" pl={0}>&larr; Back to Dashboard</Button>
 
             <Grid>
-                { }
+                {/* 左侧信息栏 */}
                 <Grid.Col span={{ base: 12, md: 7 }}>
-                    {modelAttachment && (
-                        <ModelViewer attachment={modelAttachment} />
-                    )}
-                    <Paper withBorder p="xl" radius="md" mt={modelAttachment ? 'xl' : 0}>
-
-                        <Group position="apart" align="flex-start">
-                            <div>
-                                <Title order={2}>{rfq.title}</Title>
-                                <Text c="dimmed">
-                                    Posted by <Link to={`/companies/${rfq.buyer_company_id}`}>{rfq.buyer_company_name}</Link>
-                                </Text>
-                            </div>
-                            <Badge size="lg" variant="filled" color={rfq.status === 'OPEN' ? 'blue' : 'gray'}>
-                                {rfq.status}
-                            </Badge>
-                        </Group>
-
-                        <Divider my="lg" />
-
-                        <SimpleGrid cols={2}>
-                            <div>
-                                <Text size="sm" c="dimmed">Quantity</Text>
-                                <Text fw={500}>{rfq.quantity}</Text>
-                            </div>
-                            <div>
-                                <Text size="sm" c="dimmed">Created At</Text>
-                                <Text fw={500}>{new Date(rfq.created_at).toLocaleDateString()}</Text>
-                            </div>
-                        </SimpleGrid>
-
-                        <Divider my="lg" />
-
-                        <Title order={4}>Description</Title>
-                        <Text mt="sm" mb="md" style={{whiteSpace: 'pre-wrap'}}>
-                            {rfq.description || "No description provided."}
-                        </Text>
-
-                        <Title order={4}>Attachments</Title>
-                        {attachments.length > 0 ? (
-                            <List
-                                spacing="xs"
-                                size="sm"
-                                center
-                                icon={<ThemeIcon color="gray" size={24} radius="xl"><IconFile size={16} /></ThemeIcon>}
-                                mt="sm"
-                            >
-                                {attachments.map(att => (
-                                    <List.Item key={att.id}>
-                                        { }
-                                        <a
-                                            href={`${API_BASE_URL}${att.stored_path.replace('./', '/')}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {att.original_filename}
-                                        </a>
-                                    </List.Item>
-                                ))}
-                            </List>
-                        ) : (
-                            <Text c="dimmed" size="sm" mt="sm">No attachments.</Text>
+                    <Stack>
+                        {modelAttachment && (
+                            <ModelViewer attachment={modelAttachment} />
                         )}
-                    </Paper>
+
+                        <Paper withBorder p="xl" radius="md" mt={modelAttachment ? 'xl' : 0}>
+                            <Group position="apart" align="flex-start">
+                                <div>
+                                    <Title order={2}>{rfq.title}</Title>
+                                    <Text c="dimmed">
+                                        Posted by <Link to={`/companies/${rfq.buyer_company_id}`}>{rfq.buyer_company_name}</Link>
+                                    </Text>
+                                </div>
+                                <Badge size="lg" variant="filled" color={rfq.status === 'OPEN' ? 'blue' : 'gray'}>
+                                    {rfq.status}
+                                </Badge>
+                            </Group>
+
+                            <Divider my="lg" />
+
+                            <SimpleGrid cols={2}>
+                                <div><Text size="sm" c="dimmed">Quantity</Text><Text fw={500}>{rfq.quantity}</Text></div>
+                                <div><Text size="sm" c="dimmed">Created At</Text><Text fw={500}>{new Date(rfq.created_at).toLocaleDateString()}</Text></div>
+                            </SimpleGrid>
+
+                            <Divider my="lg" />
+
+                            <Title order={4}>Description</Title>
+                            <Text mt="sm" mb="md" style={{whiteSpace: 'pre-wrap'}}>{rfq.description || "No description provided."}</Text>
+
+                            <Title order={4}>Attachments</Title>
+                            {otherAttachments.length > 0 ? (
+                                <List spacing="xs" size="sm" center icon={<ThemeIcon color="gray" size={24} radius="xl"><IconFile size={16} /></ThemeIcon>} mt="sm">
+                                    {otherAttachments.map(att => (
+                                        <List.Item key={att.id}>
+                                            <a href={`${API_BASE_URL}${att.stored_path.replace('./', '/')}`} target="_blank" rel="noopener noreferrer">
+                                                {att.original_filename}
+                                            </a>
+                                        </List.Item>
+                                    ))}
+                                </List>
+                            ) : (
+                                <Text c="dimmed" size="sm" mt="sm">No other attachments.</Text>
+                            )}
+                        </Paper>
+                    </Stack>
                 </Grid.Col>
 
-                { }
+                {/* 右侧操作栏 */}
                 <Grid.Col span={{ base: 12, md: 5 }}>
                     <Stack>
                         {isOwner && <QuoteList quotes={quotes} onAccept={handleAcceptQuote} rfqStatus={rfq.status} />}
-                        {canSupplierQuote && <CreateQuoteForm rfqId={rfq.id} onQuoteSubmitted={fetchData} />}
+                        {canSupplierQuote && <CreateQuoteForm rfqId={rfqId} onQuoteSubmitted={fetchData} />}
+
                         {rfq.status === 'AWARDED' && (
                             <Alert icon={<IconCircleCheck size="1rem" />} title="RFQ Awarded" color="teal">
-                                This RFQ has been awarded and is closed for new quotes. A purchase order has been created.
+                                This RFQ is closed for new quotes. A purchase order has been created.
                             </Alert>
                         )}
+
+                        { canSupplierQuote && (
+                            <Paper withBorder p="xl" radius="md">
+                                <Title order={4} mb="md">Need Help?</Title>
+                                <Text size="sm" c="dimmed" mb="md">
+                                    If you have technical questions, you can request a live video assistance session with the buyer.
+                                </Text>
+                                <Button fullWidth leftIcon={<IconPhonePlus size={18} />} onClick={handleRequestAssistance}>
+                                    Request Live Assistance
+                                </Button>
+                            </Paper>
+                        )}
+
                         <ChatBox rfqId={rfqId} />
                     </Stack>
                 </Grid.Col>

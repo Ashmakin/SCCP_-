@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
 import { useStripe } from '@stripe/react-stripe-js';
+import { useDisclosure } from '@mantine/hooks';
 
 // 导入所有需要的Mantine组件
 import {
@@ -15,45 +16,82 @@ import {
     Badge,
     Group,
     Center,
+    Modal,
+    Stack,
+    Rating,
 } from '@mantine/core';
 import { IconAlertCircle, IconPackage } from '@tabler/icons-react';
 
-// 一个辅助函数，根据状态返回对应的颜色
-const getStatusColor = (status) => {
-    switch (status) {
-        case 'COMPLETED':
-            return 'teal';
-        case 'SHIPPED':
-            return 'yellow';
-        case 'IN_PRODUCTION':
-            return 'blue';
-        case 'PENDING_CONFIRMATION':
-            return 'gray';
-        default:
-            return 'gray';
-    }
-};
+/**
+ * 评级模态框子组件
+ */
+function RatingModal({ orderId, opened, onClose, onRated }) {
+    const [qualityRating, setQualityRating] = useState(0);
+    const [communicationRating, setCommunicationRating] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-const getPaymentStatusColor = (status) => {
-    switch (status) {
-        case 'PAID':
-            return 'teal';
-        case 'UNPAID':
-            return 'orange';
-        case 'FAILED':
-            return 'red';
-        default:
-            return 'gray';
-    }
-};
+    const handleSubmit = async () => {
+        if (qualityRating === 0 || communicationRating === 0) {
+            alert("Please provide a rating for both categories.");
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            await api.rateOrder(orderId, {
+                quality_rating: qualityRating,
+                communication_rating: communicationRating,
+            });
+            alert("Thank you for your feedback!");
+            onRated(); // 通知父组件刷新
+            onClose();  // 关闭模态框
+        } catch (error) {
+            console.error("Failed to submit rating", error);
+            alert("Failed to submit rating. This order may have already been rated.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // 在关闭模态框时重置评分
+    const handleClose = () => {
+        setQualityRating(0);
+        setCommunicationRating(0);
+        onClose();
+    };
+
+    return (
+        <Modal opened={opened} onClose={handleClose} title="Rate Your Order" centered>
+            <Stack>
+                <div>
+                    <Text fw={500}>Quality of Parts</Text>
+                    <Rating value={qualityRating} onChange={setQualityRating} size="lg" />
+                </div>
+                <div>
+                    <Text fw={500}>Communication & Service</Text>
+                    <Rating value={communicationRating} onChange={setCommunicationRating} size="lg" />
+                </div>
+                <Button onClick={handleSubmit} loading={isSubmitting} mt="md">
+                    Submit Rating
+                </Button>
+            </Stack>
+        </Modal>
+    );
+}
 
 
+/**
+ * 主订单页面组件
+ */
 function OrdersPage() {
     const { user } = useAuth();
     const stripe = useStripe();
     const [orders, setOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+
+    // 控制评级模态框的状态
+    const [opened, { open, close }] = useDisclosure(false);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
 
     const fetchOrders = useCallback(async () => {
         setIsLoading(true);
@@ -101,6 +139,10 @@ function OrdersPage() {
         }
     };
 
+    const handleOpenRatingModal = (orderId) => {
+        setSelectedOrderId(orderId);
+        open();
+    };
 
     if (isLoading) return <div>Loading orders...</div>;
 
@@ -118,37 +160,62 @@ function OrdersPage() {
         />
     );
 
-    const rows = orders.map(order => (
-        <Table.Tr key={order.id}>
-            <Table.Td>#{order.id}</Table.Td>
-            <Table.Td>
-                <Text fw={500}>{order.rfq_title}</Text>
-            </Table.Td>
-            <Table.Td>
-                <Text size="sm">{user.company_type === 'BUYER' ? order.supplier_name : order.buyer_name}</Text>
-            </Table.Td>
-            <Table.Td style={{ textAlign: 'right' }}>
-                <Text fw={500}>${parseFloat(order.total_amount).toLocaleString()}</Text>
-            </Table.Td>
-            <Table.Td>
-                <Badge color={getStatusColor(order.status)} variant="light">{order.status}</Badge>
-            </Table.Td>
-            <Table.Td>
-                <Badge color={getPaymentStatusColor(order.payment_status)} variant="light">{order.payment_status}</Badge>
-            </Table.Td>
-            <Table.Td>
-                {user.company_type === 'BUYER' && order.payment_status === 'UNPAID' && (
-                    <Button onClick={() => handlePayNow(order.id)} size="xs">
-                        Pay Now
-                    </Button>
-                )}
-                {user.company_type === 'SUPPLIER' && <OrderStatusSelector order={order} />}
-            </Table.Td>
-        </Table.Tr>
-    ));
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'COMPLETED': return 'teal';
+            case 'SHIPPED': return 'yellow';
+            case 'IN_PRODUCTION': return 'blue';
+            default: return 'gray';
+        }
+    };
+
+    const getPaymentStatusColor = (status) => {
+        switch (status) {
+            case 'PAID': return 'teal';
+            case 'UNPAID': return 'orange';
+            default: return 'gray';
+        }
+    };
+
+    const rows = orders.map(order => {
+        const canBeRated = user.company_type === 'BUYER' &&
+            order.status === 'COMPLETED' &&
+            order.quality_rating === null;
+
+        return (
+            <Table.Tr key={order.id}>
+                <Table.Td>#{order.id}</Table.Td>
+                <Table.Td><Text fw={500}>{order.rfq_title}</Text></Table.Td>
+                <Table.Td><Text size="sm">{user.company_type === 'BUYER' ? order.supplier_name : order.buyer_name}</Text></Table.Td>
+                <Table.Td style={{ textAlign: 'right' }}><Text fw={500}>${parseFloat(order.total_amount).toLocaleString()}</Text></Table.Td>
+                <Table.Td><Badge color={getStatusColor(order.status)} variant="light">{order.status}</Badge></Table.Td>
+                <Table.Td><Badge color={getPaymentStatusColor(order.payment_status)} variant="light">{order.payment_status}</Badge></Table.Td>
+                <Table.Td>
+                    {canBeRated && (
+                        <Button size="xs" variant="outline" onClick={() => handleOpenRatingModal(order.id)}>
+                            Rate Order
+                        </Button>
+                    )}
+                    {user.company_type === 'BUYER' && order.payment_status === 'UNPAID' && (
+                        <Button onClick={() => handlePayNow(order.id)} size="xs">
+                            Pay Now
+                        </Button>
+                    )}
+                    {user.company_type === 'SUPPLIER' && <OrderStatusSelector order={order} />}
+                </Table.Td>
+            </Table.Tr>
+        );
+    });
 
     return (
         <div>
+            <RatingModal
+                orderId={selectedOrderId}
+                opened={opened}
+                onClose={close}
+                onRated={fetchOrders}
+            />
+
             <Title order={1} mb="xs">My Orders</Title>
             <Text mb="xl" c="dimmed">Here you can find all the purchase orders associated with your company.</Text>
 

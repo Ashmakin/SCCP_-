@@ -1,4 +1,4 @@
-// src/pages/RegisterPage.jsx
+ 
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -10,7 +10,7 @@ function RegisterPage() {
     const [formData, setFormData] = useState({
         company_name: '',
         company_type: 'BUYER',
-        city: '', // <-- 新增 state 字段
+        city: '', 
         email: '',
         password: '',
         full_name: '',
@@ -33,7 +33,7 @@ function RegisterPage() {
             return;
         }
         try {
-            // formData 现在包含了 city，会被自动发送到后端
+ 
             await api.register(formData);
             alert('Registration successful! Please log in.');
             navigate('/login');
@@ -78,7 +78,7 @@ function RegisterPage() {
                             { value: 'SUPPLIER', label: "Supplier (I make parts)" },
                         ]}
                     />
-                    {/* --- 【关键修改】新增城市输入框 --- */}
+                    { }
                     <TextInput
                         label="City"
                         placeholder="e.g., Shanghai"

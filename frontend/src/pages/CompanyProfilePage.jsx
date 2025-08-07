@@ -1,4 +1,4 @@
-// CompanyProfilePage.jsx
+ 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +19,7 @@ import {
 } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 
-/** 编辑公司简介 */
+ 
 function EditDescription({ initialDescription, onSave, onCancel }) {
     const [description, setDescription] = useState(initialDescription);
     const [isSaving, setIsSaving] = useState(false);
@@ -59,11 +59,11 @@ function EditDescription({ initialDescription, onSave, onCancel }) {
     );
 }
 
-/** 编辑能力标签 */
+ 
 function EditCapabilities({
                               companyCapabilities = [],
                               allCapabilities = [],
-                              onSave,   // 接收选中的 ID 数组
+                              onSave, 
                               onCancel,
                           }) {
     const [selectedIds, setSelectedIds] = useState(
@@ -71,7 +71,7 @@ function EditCapabilities({
     );
     const [isSaving, setIsSaving] = useState(false);
 
-    // 扁平化 data
+ 
     const dataForMultiSelect = useMemo(() => {
         if (!Array.isArray(allCapabilities)) return [];
         return allCapabilities.map((c) => ({
@@ -116,7 +116,7 @@ function EditCapabilities({
     );
 }
 
-/** 主页面 */
+ 
 export default function CompanyProfilePage() {
     const { companyId } = useParams();
     const { user } = useAuth();
@@ -130,7 +130,7 @@ export default function CompanyProfilePage() {
     const [isEditingDesc, setIsEditingDesc] = useState(false);
     const [isEditingCaps, setIsEditingCaps] = useState(false);
 
-    // 拉取数据
+ 
     const fetchProfileData = useCallback(async () => {
         setIsLoading(true);
         setError('');
@@ -157,28 +157,28 @@ export default function CompanyProfilePage() {
         fetchProfileData();
     }, [fetchProfileData]);
 
-    // 更新简介
+ 
     const handleUpdateDescription = async (newDescription) => {
         await api.updateCompanyProfile(companyId, { description: newDescription });
         setIsEditingDesc(false);
         fetchProfileData();
     };
 
-    // 更新能力：调用新增/删除接口
+ 
     const handleSaveCapabilities = async (selectedIds) => {
-        // 当前已有 ID 列表
+ 
         const oldIds = capabilities.map((c) => String(c.id));
-        // 计算新增与删除
+ 
         const toAdd = selectedIds.filter((id) => !oldIds.includes(id));
         const toRemove = oldIds.filter((id) => !selectedIds.includes(id));
 
-        // 并行调用
+ 
         await Promise.all([
             ...toAdd.map((id) => api.addCapabilityToCompany(Number(id))),
             ...toRemove.map((id) => api.removeCapabilityFromCompany(id)),
         ]);
 
-        // 重新拉取并结束编辑
+ 
         fetchProfileData();
     };
 
@@ -225,7 +225,7 @@ export default function CompanyProfilePage() {
 
                 <hr style={{ margin: '2rem 0' }} />
 
-                {/* 能力展示 */}
+                { }
                 <Title order={4}>Capabilities</Title>
                 <Group mt="sm" mb="md">
                     {capabilities.length > 0 ? (
@@ -256,7 +256,7 @@ export default function CompanyProfilePage() {
 
                 <hr style={{ margin: '2rem 0' }} />
 
-                {/* 公司简介 */}
+                { }
                 <Title order={4}>About Us</Title>
                 <Text mt="sm" mb="md" style={{ whiteSpace: 'pre-wrap' }}>
                     {profile.description || 'No description provided.'}

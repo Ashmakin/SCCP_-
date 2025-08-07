@@ -1,11 +1,11 @@
-// src/components/SupplierAnalytics.jsx
+ 
 
 import React, { useState, useEffect } from 'react';
-import { Card, Text, SimpleGrid, Title, Paper, Alert, Center, Loader } from '@mantine/core';
+import { Text, SimpleGrid, Title, Paper, Alert, Center, Loader } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import * as api from '../api';
 
-// 一个可复用的、用于显示单个统计指标的卡片组件
+ 
 function StatCard({ title, value }) {
     return (
         <Paper withBorder p="md" radius="md">
@@ -49,10 +49,10 @@ function SupplierAnalytics() {
     }
 
     if (!stats) {
-        return null; // 如果没有数据，不显示任何内容
+        return null; 
     }
 
-    // 在前端计算报价成功率，并处理除以零的情况
+ 
     const winRate = stats.total_quotes_submitted > 0
         ? ((stats.accepted_quotes / stats.total_quotes_submitted) * 100).toFixed(1) + '%'
         : '0%';

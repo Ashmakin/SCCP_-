@@ -1,11 +1,11 @@
-// src/pages/LoginPage.jsx
+ 
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-// --- 导入Mantine组件 ---
+ 
 import { TextInput, PasswordInput, Button, Paper, Title, Container, Alert } from '@mantine/core';
-import { IconAlertCircle } from '@tabler/icons-react'; // Mantine使用Tabler图标
+import { IconAlertCircle } from '@tabler/icons-react'; 
 
 function LoginPage() {
     const [email, setEmail] = useState('');

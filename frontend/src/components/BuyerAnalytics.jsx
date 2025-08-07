@@ -1,4 +1,4 @@
-// src/components/BuyerAnalytics.jsx
+ 
 
 import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
@@ -21,7 +21,7 @@ function BuyerAnalytics() {
                 ]);
                 setStats(statsRes.data);
 
-                // 准备图表数据
+ 
                 const labels = spendingRes.data.map(item => item.supplier_name);
                 const data = spendingRes.data.map(item => item.total);
                 setSpendingData({

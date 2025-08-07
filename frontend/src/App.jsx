@@ -1,12 +1,12 @@
-// src/App.jsx
+ 
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useDisclosure } from '@mantine/hooks';
 import { AppShell, Burger, Group, Button, Text, UnstyledButton } from '@mantine/core';
-
-// 导入所有页面组件
+import ARCollaborationPage from './pages/ARCollaborationPage';
+import { useNotifications } from './context/NotificationContext'; // 假设这个Context已存在
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -20,10 +20,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import NotificationBell from "./components/NotificationBell.jsx";
+import IncomingCallModal from "./components/IncomingCallModal.jsx";
 
 
 function App() {
-    // Mantine hook for controlling the mobile navigation sidebar
+    const { lastMessage, sendMessage } = useNotifications();
+    const [callRequest, setCallRequest] = useState(null);
     const [opened, { toggle }] = useDisclosure();
     const { user, logoutUser } = useAuth();
     const navigate = useNavigate();
@@ -35,9 +37,32 @@ function App() {
 
     const linkStyle = { textDecoration: 'none' };
 
-    // Reusable component for navigation links to avoid repetition
+// 监听来自服务器的呼叫请求
+    useEffect(() => {
+        if (lastMessage && lastMessage.data.startsWith('rtc-call-request|')) {
+            const [, senderId, senderName, rfqId] = lastMessage.data.split('|');
+            // 确保不是自己呼叫自己
+            if (user && user.sub !== parseInt(senderId)) {
+                setCallRequest({ senderId: parseInt(senderId), senderName, rfqId });
+            }
+        }
+    }, [lastMessage, user]);
+
+    const handleAcceptCall = () => {
+        if (!callRequest) return;
+        // 1. 通过WebSocket发送“接受”信号给呼叫方
+        sendMessage(`ACCEPT|${callRequest.senderId}`);
+        // 2. 作为接听方进入协作页面
+        navigate(`/collaboration/rfq/${callRequest.rfqId}?initiate=false&remoteUser=${callRequest.senderId}`);
+        setCallRequest(null);
+    };
+
+    const handleDeclineCall = () => {
+        // 可以在这里通过WebSocket发送一个“拒绝”信号（可选）
+        setCallRequest(null);
+    };
     const NavLinks = ({ isMobile }) => {
-        // When a mobile link is clicked, close the sidebar
+ 
         const onLinkClick = isMobile ? toggle : () => {};
 
         return (
@@ -67,6 +92,14 @@ function App() {
     };
 
     return (
+        <>
+            {/* 呼叫弹窗 */}
+            <IncomingCallModal
+                opened={!!callRequest}
+                callerName={callRequest?.senderName}
+                onAccept={handleAcceptCall}
+                onDecline={handleDeclineCall}
+            />
         <AppShell
             header={{ height: 60 }}
             navbar={{
@@ -76,7 +109,7 @@ function App() {
             }}
             padding="md"
         >
-            {/* 应用的头部 (Header) */}
+            { }
             <AppShell.Header>
                 <Group h="100%" px="md" justify="space-between">
                     <Group>
@@ -90,10 +123,10 @@ function App() {
                         </UnstyledButton>
                     </Group>
 
-                    {/* 桌面端导航链接 */}
+                    { }
                     <Group visibleFrom="sm">
                         {user ? (
-                            // 登录后视图
+ 
                             <Group>
                                 <Button component={Link} to="/dashboard" variant="subtle">Dashboard</Button>
                                 <Button component={Link} to="/orders" variant="subtle">Orders</Button>
@@ -105,7 +138,7 @@ function App() {
                                 <Button onClick={handleLogout} variant="outline">Logout</Button>
                             </Group>
                         ) : (
-                            // 登录前视图
+ 
                             <Group>
                                 <Button component={Link} to="/login" variant="default">Login</Button>
                                 <Button component={Link} to="/register" variant="filled">Register</Button>
@@ -115,14 +148,14 @@ function App() {
                 </Group>
             </AppShell.Header>
 
-            {/* 移动端视图的侧边栏 (Navbar) */}
+            { }
             <AppShell.Navbar p="md">
                 <Group direction="column" grow>
                     <NavLinks isMobile={true} />
                 </Group>
             </AppShell.Navbar>
 
-            {/* 应用的主内容区域，所有页面都在这里渲染 */}
+            { }
             <AppShell.Main>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
@@ -136,10 +169,11 @@ function App() {
                     <Route path="/rfqs/:rfqId" element={ <ProtectedRoute><RfqDetailPage /></ProtectedRoute> } />
                     <Route path="/me" element={ <ProtectedRoute><MyProfilePage /></ProtectedRoute> } />
                     <Route path="/admin" element={ <AdminRoute><AdminPage /></AdminRoute> } />
-
+                    <Route path="/collaboration/rfq/:rfqId" element={<ProtectedRoute><ARCollaborationPage /></ProtectedRoute>} />
                 </Routes>
             </AppShell.Main>
         </AppShell>
+        </>
     );
 }
 

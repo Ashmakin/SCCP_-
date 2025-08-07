@@ -1,13 +1,13 @@
-// src/components/NotificationBell.jsx
+ 
 
 import React from 'react';
-import { Indicator, Popover, Text, ScrollArea, Group, Button, ActionIcon, Tooltip } from '@mantine/core';
+import { Indicator, Popover, Text, ScrollArea, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { IconBell, IconMailOpened } from '@tabler/icons-react';
 import { useNotifications } from '../context/NotificationContext';
 import { Link } from 'react-router-dom';
 
 function NotificationBell() {
-    // 从Context获取所需的状态和函数
+ 
     const { notifications, unreadCount, markOneAsRead, markAllAsRead } = useNotifications();
 
     return (
@@ -37,14 +37,14 @@ function NotificationBell() {
                                 to={notification.link_url || '#'}
                                 key={notification.id}
                                 style={{textDecoration: 'none', color: 'inherit'}}
-                                // 【关键交互】点击时，调用标记已读的函数
+ 
                                 onClick={() => markOneAsRead(notification.id)}
                             >
                                 <div
                                     style={{
                                         padding: '0.75rem',
                                         borderTop: '1px solid #eee',
-                                        // 【关键UI】根据已读状态显示不同样式
+ 
                                         backgroundColor: notification.is_read ? 'transparent' : '#e7f5ff',
                                         opacity: notification.is_read ? 0.6 : 1,
                                     }}
