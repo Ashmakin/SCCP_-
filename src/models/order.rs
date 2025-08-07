@@ -28,6 +28,8 @@ pub struct PurchaseOrder {
     pub status: String,
     pub created_at: DateTime<Utc>,
     pub payment_status: String,
+    // --- 新增 ---
+    pub quality_rating: Option<u8>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -16,6 +16,8 @@ pub struct Rfq {
     pub buyer_company_name: String,
     #[sqlx(default)] //
     pub city: Option<String>,
+    #[sqlx(default)]
+    pub buyer_user_id: i32,
 }
 
 #[derive(Debug, Deserialize)]

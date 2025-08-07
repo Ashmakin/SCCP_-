@@ -24,3 +24,4 @@ pub async fn update_password(
     user_service::change_password(pool.get_ref(), &claims, dto.into_inner()).await?;
     Ok(HttpResponse::Ok().json(serde_json::json!({ "message": "Password updated successfully" })))
 }
+

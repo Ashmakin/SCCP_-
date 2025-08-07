@@ -14,6 +14,7 @@ use crate::{
 };
 use querystring::querify;
 use sqlx::MySqlPool;
+use crate::services::chat_server::{RtcCallAccepted, RtcCallRequest, RtcSignal};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -181,6 +182,45 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
                                     });
                                 }
                             }
+
+                        }
+                        // 【新增】处理RTC信令
+                        "RTC" => {
+                            // 期望的格式: "recipient_user_id|signal_data_json"
+                            if let Some((recipient_id_str, signal_data)) = value.split_once('|') {
+                                if let Ok(recipient_user_id) = recipient_id_str.parse() {
+                                    self.chat_server_addr.do_send(RtcSignal {
+                                        sender_user_id: self.user_id,
+                                        recipient_user_id,
+                                        signal_data: signal_data.to_string(),
+                                    });
+                                }
+                            }
+                        }
+                        // 【新增】处理呼叫请求
+                        "CALL" => {
+                            // 期望格式: "recipient_user_id|rfq_id"
+                            if let Some((recipient_id_str, rfq_id_str)) = value.split_once('|') {
+                                if let (Ok(recipient_user_id), Ok(rfq_id)) = (recipient_id_str.parse(), rfq_id_str.parse()) {
+                                    // 假设我们能从 claims 或数据库获取当前用户名
+                                    let current_user_name = "A User".to_string(); // 实际应查询
+                                    self.chat_server_addr.do_send(RtcCallRequest {
+                                        sender_user_id: self.user_id,
+                                        sender_full_name: current_user_name,
+                                        recipient_user_id,
+                                        rfq_id,
+                                    });
+                                }
+                            }
+                        }
+                        // 【新增】处理呼叫应答
+                        "ACCEPT" => {
+                            if let Ok(original_sender_id) = value.parse() {
+                                self.chat_server_addr.do_send(RtcCallAccepted {
+                                    original_sender_id,
+                                    recipient_id: self.user_id,
+                                });
+                            }
                         }
                         _ => log::warn!("Unknown WebSocket command: {}", command),
                     }
@@ -194,6 +234,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsSession {
         }
     }
 }
+
 
 /// HTTP端点，用于将HTTP连接升级为全局WebSocket连接
 pub async fn start_global_session(

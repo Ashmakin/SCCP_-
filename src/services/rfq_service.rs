@@ -244,8 +244,17 @@ pub async fn get_all_open_rfqs(
 }
 /////////////////
 pub async fn get_rfq_by_id(pool: &MySqlPool, rfq_id: i32) -> Result<Rfq, AppError> {
+    // The new query joins the users table to get the user ID
     let rfq = sqlx::query_as::<_, Rfq>(
-        "SELECT r.*, c.name as buyer_company_name FROM rfqs r JOIN companies c ON r.buyer_company_id = c.id WHERE r.id = ?"
+        "SELECT
+            r.*,
+            c.name as buyer_company_name,
+            c.city,
+            -- Find the first user associated with the buyer company
+            (SELECT u.id FROM users u WHERE u.company_id = r.buyer_company_id ORDER BY u.id ASC LIMIT 1) as buyer_user_id
+         FROM rfqs r
+         JOIN companies c ON r.buyer_company_id = c.id
+         WHERE r.id = ?"
     )
         .bind(rfq_id)
         .fetch_one(pool)

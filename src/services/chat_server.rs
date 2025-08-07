@@ -68,6 +68,33 @@ pub struct ChatServer {
     sessions: HashMap<i32, Recipient<ServerMessage>>,
 }
 
+// 【新增】WebRTC信令消息
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct RtcSignal {
+    pub sender_user_id: i32,
+    pub recipient_user_id: i32,
+    pub signal_data: String, // 包含SDP offer/answer 或 ICE candidate的JSON字符串
+}
+
+// 【新增】WebRTC呼叫请求信令
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct RtcCallRequest {
+    pub sender_user_id: i32,
+    pub sender_full_name: String, // 附带呼叫者姓名
+    pub recipient_user_id: i32,
+    pub rfq_id: i32,
+}
+
+// 【新增】WebRTC呼叫应答信令
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct RtcCallAccepted {
+    pub original_sender_id: i32, // 原始呼叫者
+    pub recipient_id: i32,       // 接听者
+}
+
 impl Actor for ChatServer {
     type Context = Context<Self>;
 }
@@ -142,6 +169,47 @@ impl Handler<DirectMessage> for ChatServer {
             log::info!("Sent direct notification to online user #{}.", msg.recipient_user_id);
         } else {
             log::info!("User #{} is offline. Notification was saved to DB but not pushed.", msg.recipient_user_id);
+        }
+    }
+}
+// 【新增】处理 RtcSignal 消息
+impl Handler<RtcSignal> for ChatServer {
+    type Result = ();
+
+    fn handle(&mut self, msg: RtcSignal, _: &mut Self::Context) {
+        // 查找接收方的WebSocket连接
+        if let Some(recipient_addr) = self.sessions.get(&msg.recipient_user_id) {
+            // 将信令数据封装后，原封不动地转发给接收方
+            // 我们添加一个前缀，方便前端识别
+            let forward_msg = format!("rtc-signal|{}|{}", msg.sender_user_id, msg.signal_data);
+            recipient_addr.do_send(ServerMessage(forward_msg));
+            log::info!("Forwarded RTC signal from user #{} to user #{}.", msg.sender_user_id, msg.recipient_user_id);
+        } else {
+            log::warn!("Could not forward RTC signal. Recipient user #{} is offline.", msg.recipient_user_id);
+        }
+    }
+}
+
+// 【新增】处理 RtcCallRequest
+impl Handler<RtcCallRequest> for ChatServer {
+    type Result = ();
+    fn handle(&mut self, msg: RtcCallRequest, _: &mut Self::Context) {
+        if let Some(recipient_addr) = self.sessions.get(&msg.recipient_user_id) {
+            // 向接收方发送一个带有呼叫者信息的通知
+            let forward_msg = format!("rtc-call-request|{}|{}|{}", msg.sender_user_id, msg.sender_full_name, msg.rfq_id);
+            recipient_addr.do_send(ServerMessage(forward_msg));
+        }
+    }
+}
+
+// 【新增】处理 RtcCallAccepted
+impl Handler<RtcCallAccepted> for ChatServer {
+    type Result = ();
+    fn handle(&mut self, msg: RtcCallAccepted, _: &mut Self::Context) {
+        // 通知原始呼叫者，对方已接听，可以开始WebRTC握手
+        if let Some(original_sender_addr) = self.sessions.get(&msg.original_sender_id) {
+            let forward_msg = format!("rtc-call-accepted|{}", msg.recipient_id);
+            original_sender_addr.do_send(ServerMessage(forward_msg));
         }
     }
 }

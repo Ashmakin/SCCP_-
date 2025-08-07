@@ -38,6 +38,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("/{order_id}/status", web::patch().to(order_handler::patch_order_status))
         // --- 新增 ---
             .route("/{order_id}/create-checkout-session", web::post().to(payment_handler::create_session)),
+
     );
 
     // --- 新增受保护的User路由 ---

@@ -9,3 +9,4 @@ pub(crate) mod payment;
 pub(crate) mod capability;
 pub(crate) mod notification;
 pub(crate) mod annotation;
+pub(crate) mod rating;
