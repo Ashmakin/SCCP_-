@@ -14,7 +14,9 @@ export const NotificationProvider = ({ children }) => {
     useEffect(() => {
         if (user) {
             const token = localStorage.getItem('token');
-            setSocketUrl(`ws://supplier-parts-system-pre.onrender.com/ws?token=${token}`);
+    // 从环境变量中读取WebSocket的基础URL
+            const wsUrl = import.meta.env.VITE_WS_BASE_URL || `ws://127.0.0.1:8080`;
+            setSocketUrl(`${wsUrl}/ws?token=${token}`);
         } else {
             setSocketUrl(null); // Disconnect when the user logs out
         }
