@@ -14,7 +14,7 @@ export const NotificationProvider = ({ children }) => {
     useEffect(() => {
         if (user) {
             const token = localStorage.getItem('token');
-            setSocketUrl(`ws://127.0.0.1:8080/ws?token=${token}`);
+            setSocketUrl(`ws://supplier-parts-system-pre.onrender.com/ws?token=${token}`);
         } else {
             setSocketUrl(null); // Disconnect when the user logs out
         }
